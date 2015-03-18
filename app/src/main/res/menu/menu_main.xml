@@ -2,9 +2,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" tools:context=".MainActivity">
     <group android:checkableBehavior="single">
-        <item android:id="@+id/item1" android:titleCondensed="A" android:title="Mode A" android:icon="@android:drawable/ic_menu_preferences" android:checked="true">
+        <item android:id="@+id/item1" android:titleCondensed="Test" android:title="Mode Test" android:icon="@android:drawable/ic_menu_preferences" android:checked="true">
         </item>
-        <item android:id="@+id/item2" android:titleCondensed="B" android:title="Mode B" android:icon="@android:drawable/ic_menu_preferences" >
+        <item android:id="@+id/item2" android:titleCondensed="Production" android:title="Mode Production" android:icon="@android:drawable/ic_menu_preferences" >
         </item>
     </group>
 </menu>

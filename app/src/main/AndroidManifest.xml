@@ -3,6 +3,11 @@
     package="com.example.skhalid.softmetersimulation" >
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" android:required="false"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:required="false"/>
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+
+
 
     <application
         android:allowBackup="true"
@@ -18,6 +23,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- Service to asynchronously fetch a location address using a Geocoder. Setting the
+android:exported attribute to "false" stops other apps from starting this
+service, even when using an explicit intent. -->
+        <service
+            android:name=".FetchAddressIntentService"
+            android:exported="false"/>
+        <meta-data android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
     </application>
 
 </manifest>
