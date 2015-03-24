@@ -1,7 +1,9 @@
 package com.example.skhalid.softmetersimulation;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -10,11 +12,17 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -22,6 +30,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextSwitcher;
 import android.widget.TextView;
@@ -61,49 +70,27 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     private EditText atuVal;
     private EditText atcVal;
 
-
-    private TextView totalTimeVal;
-    private TextView totalDistanceVal;
-    private TextView fareVal;
-
-    private BootstrapButton startBtn;
-    private BootstrapButton stopBtn;
-    private BootstrapButton resetBtn;
+    private Button startBtn;
+    private Button stopBtn;
 
     protected TextSwitcher addressVal;
-    protected ArrayList<LatiLongi> coordinatesList;
-    double ambPickupFee = 4.00; //APF
-    double puMiles = 0; // PUM
-    double puTime = 0;
+    public static double ambPickupFee = 4.00; //APF
+    public static double puMiles = 0; // PUM
+    public static double puTime = 0;
 
-    double additionalDistanceUnit = 0.2; // ADU - Fraction Of KM
-    double additionalDistanceUnitCost = 0.4; // ADC
+    public static double additionalDistanceUnit = 0.2; // ADU - Fraction Of KM
+    public static double additionalDistanceUnitCost = 0.4; // ADC
 
-    double additionalTimeUnit = 0.25; // ATU - Fraction of Minute
-    double additionalTimeUnitCost =  0.15; //ATC
+    public static double additionalTimeUnit = 0.25; // ATU - Fraction of Minute
+    public static double additionalTimeUnitCost =  0.15; //ATC
+    public static boolean isTestMode = true;
 
-    double deltaTime = 1.0/6.0; //Seconds
-    double deltaDistance;
-
-    double totalDistance = 0.0; //KM
-    double totalTime = 0.0; // Minutes
-    int K=0; //Iterator
-    double accumDeltaD = 0.0;  //KM
-    double acccumDeltaT = 0.0; //Minutes
-    double tempLat, tempLong;
-
-    double distanceCost, timeCost;
-    double meterValue;
-    ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-    final DecimalFormat dFormat = new DecimalFormat("0.00");
-    Future<?> future;
-    boolean isTestMode = true;
     private GoogleApiClient mGoogleApiClient;
     private Location mLastLocation;
     private LocationRequest mLocationRequest;
     private Location mCurrentLocation;
     protected Boolean mRequestingLocationUpdates;
-    private SharedPreferences pref;
+    public static SharedPreferences pref;
     protected String mAddressOutput;
 
     /**
@@ -114,7 +101,17 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     private LocationManager lm;
     private String locationProviders;
     private int locationMode;
+    private Messenger mServiceMessenger;
+    private ServiceConnection mCon = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            mServiceMessenger = new Messenger(service);
+        }
 
+        public void onServiceDisconnected(ComponentName className) {
+            mServiceMessenger = null;
+            unbindService(mCon);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,27 +131,140 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
          atuVal  = (EditText) findViewById(R.id.atuVal);
          atcVal  = (EditText) findViewById(R.id.atcVal);
 
-        totalTimeVal = (TextView) findViewById(R.id.timeVal);
-        totalDistanceVal = (TextView) findViewById(R.id.distanceVal);
-        fareVal = (TextView) findViewById(R.id.fareVal);
+        apfVal.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(s.toString().length() > 0)
+                    ambPickupFee = Double.parseDouble(s.toString()); //APF
+            }
+        });
+
+        pumVal.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(s.toString().length() > 0)
+                    puMiles = Double.parseDouble(s.toString()); //APF
+            }
+        });
+
+        putVal.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(s.toString().length() > 0)
+                    puTime = Double.parseDouble(s.toString()); //APF
+            }
+        });
+
+        aduVal.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(s.toString().length() > 0)
+                    additionalDistanceUnit = Double.parseDouble(s.toString()); //APF
+            }
+        });
+
+        adcVal.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(s.toString().length() > 0)
+                    additionalDistanceUnitCost = Double.parseDouble(s.toString()); //APF
+            }
+        });
+
+        atuVal.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(s.toString().length() > 0)
+                    additionalTimeUnit = Double.parseDouble(s.toString()); //APF
+            }
+        });
+
+        atcVal.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(s.toString().length() > 0)
+                    additionalTimeUnitCost = Double.parseDouble(s.toString()); //APF
+            }
+        });
 
         addressVal = (TextSwitcher) findViewById(R.id.textSwitcher);
-        Typeface tf = Typeface.createFromAsset(getAssets(),
-                "digital-7.ttf");
-        fareVal.setTypeface(tf);
 
-        startBtn = (BootstrapButton) findViewById(R.id.startButton);
-        stopBtn = (BootstrapButton) findViewById(R.id.stopButton);
-        resetBtn = (BootstrapButton) findViewById(R.id.resetButton);
+        startBtn = (Button) findViewById(R.id.startButton);
+        stopBtn = (Button) findViewById(R.id.stopButton);
 
-        stopBtn.setBootstrapButtonEnabled(false);
-        resetBtn.setBootstrapButtonEnabled(false);
+        stopBtn.setEnabled(false);
 
         startBtn.setOnClickListener(this);
         stopBtn.setOnClickListener(this);
-        resetBtn.setOnClickListener(this);
-
-        coordinatesList = new ArrayList<LatiLongi>();
 
         mRequestingLocationUpdates = true;
 
@@ -185,7 +295,13 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
         lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         buildGoogleApiClient();
+        Messenger mActivityMessenger;
+        mActivityMessenger = new Messenger(new IncomingHandler());
 
+        Intent lIntent = new Intent(MainActivity.this, FloatingService.class);
+        lIntent.putExtra("Messenger", mActivityMessenger);
+        startService(lIntent);
+        bindService(lIntent, mCon, 0);
     }
 
 
@@ -222,197 +338,46 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.startButton:
-                mRequestingLocationUpdates = true;
-                if(apfVal.getText().toString().length() > 0 && pumVal.getText().toString().length() > 0 && putVal.getText().toString().length() > 0 && aduVal.getText().toString().length() > 0 && adcVal.getText().toString().length() > 0 && atuVal.getText().toString().length() > 0 && atcVal.getText().toString().length() > 0) {
-                    if(K == 0) {
-                        readTextFile();
-                         ambPickupFee = Double.parseDouble(apfVal.getText().toString()); //APF
-                         puMiles = Double.parseDouble(pumVal.getText().toString()); // PUM
-                         puTime = Double.parseDouble(putVal.getText().toString());
+                sendMessage(Constants.MSG_SOFTMETER_ON);
+                stopBtn.setEnabled(true);
+                startBtn.setEnabled(false);
+//                mRequestingLocationUpdates = true;
+//                if(apfVal.getText().toString().length() > 0 && pumVal.getText().toString().length() > 0 && putVal.getText().toString().length() > 0 && aduVal.getText().toString().length() > 0 && adcVal.getText().toString().length() > 0 && atuVal.getText().toString().length() > 0 && atcVal.getText().toString().length() > 0) {
+//                    if(K == 0) {
+//                        readTextFile();
+//                         ambPickupFee = Double.parseDouble(apfVal.getText().toString()); //APF
+//                         puMiles = Double.parseDouble(pumVal.getText().toString()); // PUM
+//                         puTime = Double.parseDouble(putVal.getText().toString());
+//
+//                         additionalDistanceUnit = Double.parseDouble(aduVal.getText().toString()); // ADU - Fraction Of KM
+//                         additionalDistanceUnitCost = Double.parseDouble(adcVal.getText().toString()); // ADC
+//
+//                         additionalTimeUnit = Double.parseDouble(atuVal.getText().toString()); // ATU - Fraction of Minute
+//                         additionalTimeUnitCost =  Double.parseDouble(atcVal.getText().toString()); //ATC
+//
 
-                         additionalDistanceUnit = Double.parseDouble(aduVal.getText().toString()); // ADU - Fraction Of KM
-                         additionalDistanceUnitCost = Double.parseDouble(adcVal.getText().toString()); // ADC
-
-                         additionalTimeUnit = Double.parseDouble(atuVal.getText().toString()); // ATU - Fraction of Minute
-                         additionalTimeUnitCost =  Double.parseDouble(atcVal.getText().toString()); //ATC
-
-                        apfVal.setEnabled(false);
-                        pumVal.setEnabled(false);
-                        putVal.setEnabled(false);
-
-                        aduVal.setEnabled(false);
-                        adcVal.setEnabled(false);
-                        atuVal.setEnabled(false);
-                        atcVal.setEnabled(false);
-                    }
-
-                    startBtn.setBootstrapButtonEnabled(false);
-                    stopBtn.setBootstrapButtonEnabled(true);
-                    resetBtn.setBootstrapButtonEnabled(true);
-                    if(isTestMode)
-                    calculateAndShowFarefromFile();
-                    else
-                        calculateAndShowFare();
-                }else
-                Toast.makeText(getApplicationContext(), "Provide Proper Values of Fields", Toast.LENGTH_LONG).show();
+//                    }
+//
+//                    startBtn.setBootstrapButtonEnabled(false);
+//                    stopBtn.setBootstrapButtonEnabled(true);
+//                    resetBtn.setBootstrapButtonEnabled(true);
+//                    if(isTestMode)
+//                    calculateAndShowFarefromFile();
+//                    else
+//                        calculateAndShowFare();
+//                }else
+//                Toast.makeText(getApplicationContext(), "Provide Proper Values of Fields", Toast.LENGTH_LONG).show();
                 break;
             case R.id.stopButton:
-                stopBtn.setBootstrapButtonEnabled(false);
-                startBtn.setBootstrapButtonEnabled(true);
-                future.cancel(true);
-                break;
-            case R.id.resetButton:
-                if(future.isCancelled()) {
-                    totalDistance = 0.0; //KM
-                    totalTime = 0.0; // Minutes
-                    K = 0; //Iterator
-                    accumDeltaD = 0.0;  //KM
-                    acccumDeltaT = 0.0; //Minutes
-                    totalDistanceVal.setText(dFormat.format(totalDistance));
-                    totalTimeVal.setText(dFormat.format(totalTime));
-                    fareVal.setText(dFormat.format(0.0));
-
-                    apfVal.setEnabled(true);
-                    pumVal.setEnabled(true);
-                    putVal.setEnabled(true);
-
-                    aduVal.setEnabled(true);
-                    adcVal.setEnabled(true);
-                    atuVal.setEnabled(true);
-                    atcVal.setEnabled(true);
-
-                    stopBtn.setBootstrapButtonEnabled(true);
-                    startBtn.setBootstrapButtonEnabled(true);
-
-                }
-                else
-                    Toast.makeText(getApplicationContext(), "Please Stop First", Toast.LENGTH_LONG).show();
+                stopBtn.setEnabled(false);
+                startBtn.setEnabled(true);
+                sendMessage(Constants.MSG_SOFTMETER_OFF);
 
                 break;
+
             default:
                 break;
         }
-    }
-
-    private void readTextFile(){
-        //Find the directory for the SD Card using the API
-//*Don't* hardcode "/sdcard"
-        File sdcard = Environment.getExternalStorageDirectory();
-
-//Get the text file
-        File file = new File(sdcard,"10.txt");
-
-//Read text from file
-        StringBuilder text = new StringBuilder();
-        coordinatesList.clear();
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            String line;
-
-            while ((line = br.readLine()) != null) {
-                text.append(line);
-                text.append('\n');
-                coordinatesList.add(new LatiLongi(Double.parseDouble(line.split("\t")[1]), Double.parseDouble(line.split("\t")[2])));
-            }
-            br.close();
-        }
-        catch (IOException e) {
-            Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
-        }
-    }
-
-    private void calculateAndShowFarefromFile(){
-        future = scheduler.scheduleWithFixedDelay(new Runnable() {
-            @Override
-            public void run() {
-                if(K <= coordinatesList.size()) {
-                    if (K == 0) {
-                        meterValue = ambPickupFee;
-                    } else {
-                        deltaDistance = DistanceCalculator.CalculateDistance(tempLat, tempLong, coordinatesList.get(K).lat, coordinatesList.get(K).lon)/1000.00;
-                        totalDistance = totalDistance + deltaDistance;
-                        totalTime = totalTime + deltaTime;
-                        if(totalTime > puTime || totalDistance > puMiles){
-                            acccumDeltaT = acccumDeltaT + deltaTime;
-                            timeCost = (int)(acccumDeltaT/additionalTimeUnit)*additionalTimeUnitCost;
-                            acccumDeltaT = acccumDeltaT % additionalTimeUnit;
-
-                            accumDeltaD = accumDeltaD + deltaDistance;
-                            distanceCost = (int)(accumDeltaD/additionalDistanceUnit)*additionalDistanceUnitCost;
-                            accumDeltaD = accumDeltaD % additionalDistanceUnit;
-//                            if(!isTestMode) {
-                                if (timeCost > distanceCost)
-                                    accumDeltaD = 0.0;
-                                else
-                                    acccumDeltaT = 0.0;
-//                            }
-                            meterValue = meterValue + Math.max(distanceCost, timeCost);
-
-                        }
-                    }
-
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            totalDistanceVal.setText(dFormat.format(totalDistance));
-                            totalTimeVal.setText(dFormat.format(totalTime));
-                            fareVal.setText(dFormat.format(meterValue));
-                        }
-                    });
-
-                    tempLat = coordinatesList.get(K).lat;
-                    tempLong = coordinatesList.get(K).lon;
-                    K = K + 1;
-                }
-            }
-        }, 0, 10, TimeUnit.SECONDS);
-    }
-
-    private void calculateAndShowFare(){
-        future = scheduler.scheduleWithFixedDelay(new Runnable() {
-            @Override
-            public void run() {
-                if(pref != null) {
-                    if (K == 0) {
-                        meterValue = ambPickupFee;
-                    } else {
-                        deltaDistance = DistanceCalculator.CalculateDistance(tempLat, tempLong, Double.parseDouble(pref.getString("Lattitude","0.0")), Double.parseDouble(pref.getString("Longitude","0.0")))/1000.00;
-                        totalDistance = totalDistance + deltaDistance;
-                        totalTime = totalTime + deltaTime;
-                        if(totalTime > puTime || totalDistance > puMiles){
-                            acccumDeltaT = acccumDeltaT + deltaTime;
-                            timeCost = (int)(acccumDeltaT/additionalTimeUnit)*additionalTimeUnitCost;
-                            acccumDeltaT = acccumDeltaT % additionalTimeUnit;
-
-                            accumDeltaD = accumDeltaD + deltaDistance;
-                            distanceCost = (int)(accumDeltaD/additionalDistanceUnit)*additionalDistanceUnitCost;
-                            accumDeltaD = accumDeltaD % additionalDistanceUnit;
-//                            if(!isTestMode) {
-                            if (timeCost >= distanceCost)
-                                accumDeltaD = 0.0;
-                            else
-                                acccumDeltaT = 0.0;
-//                            }
-                            meterValue = meterValue + Math.max(distanceCost, timeCost);
-
-                        }
-                    }
-
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            totalDistanceVal.setText(dFormat.format(totalDistance));
-                            totalTimeVal.setText(dFormat.format(totalTime));
-                            fareVal.setText(dFormat.format(meterValue));
-                        }
-                    });
-
-                    tempLat = Double.parseDouble(pref.getString("Lattitude","0.0"));
-                    tempLong = Double.parseDouble(pref.getString("Longitude","0.0"));
-                    K = K + 1;
-                }
-            }
-        }, 0, 10, TimeUnit.SECONDS);
     }
 
     @Override
@@ -429,28 +394,29 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         // connection to GoogleApiClient intact.  Here, we resume receiving
         // location updates if the user has requested them.
 
-        if (mGoogleApiClient.isConnected() && mRequestingLocationUpdates) {
-            startLocationUpdates();
-        }
+//        if (mGoogleApiClient.isConnected() && mRequestingLocationUpdates) {
+//            startLocationUpdates();
+//        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         // Stop location updates to save battery, but don't disconnect the GoogleApiClient object.
-        if (mGoogleApiClient.isConnected()) {
-            stopLocationUpdates();
-        }
+//        if (mGoogleApiClient.isConnected()) {
+//            stopLocationUpdates();
+//        }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        mGoogleApiClient.disconnect();
     }
     @Override
     protected void onDestroy() {
-        scheduler.shutdownNow();
+        unbindService(mCon);
+        mGoogleApiClient.disconnect();
+
         super.onDestroy();
     }
 
@@ -521,12 +487,13 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
             pref.edit().putString("Lattitude", String.valueOf(mCurrentLocation.getLatitude())).putString("Longitude", String.valueOf(mCurrentLocation.getLongitude())).commit();
             Toast.makeText(this, getResources().getString(R.string.location_updated_message) + mCurrentLocation.getAccuracy() + " meters",
                     Toast.LENGTH_SHORT).show();
-            if (!isTestMode)
-                if (future != null)
-                    if (future.isCancelled()) {
-                        tempLat = Double.parseDouble(pref.getString("Lattitude", "0.0"));
-                        tempLong = Double.parseDouble(pref.getString("Longitude", "0.0"));
-                    }
+            sendMessage(Constants.MSG_LOCATION_CHANGED);
+//            if (!isTestMode)
+//                if (future != null)
+//                if (future.isCancelled()) {
+//                    tempLat = Double.parseDouble(pref.getString("Lattitude", "0.0"));
+//                    tempLong = Double.parseDouble(pref.getString("Longitude", "0.0"));
+//                }
             startIntentService();
         }
     }
@@ -601,5 +568,76 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         gpsDialog = AlertDialogFragment.newInstance("Inaccurate Location", "", "Location is not up to mark. \nPlease change Location Mode to High Accuracy.", "OK", Constants.GPS);
         gpsDialog.show(getSupportFragmentManager(), "dialog");
 
+    }
+
+    private class IncomingHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what){
+                case Constants.MSG_DISABLE_FIELDS:
+                        apfVal.setEnabled(false);
+                        pumVal.setEnabled(false);
+                        putVal.setEnabled(false);
+
+                        aduVal.setEnabled(false);
+                        adcVal.setEnabled(false);
+                        atuVal.setEnabled(false);
+                        atcVal.setEnabled(false);
+
+                    break;
+                case Constants.MSG_ENABLE_FIELDS:
+                    apfVal.setEnabled(true);
+                    pumVal.setEnabled(true);
+                    putVal.setEnabled(true);
+
+                    aduVal.setEnabled(true);
+                    adcVal.setEnabled(true);
+                    atuVal.setEnabled(true);
+                    atcVal.setEnabled(true);
+                    break;
+                default:
+                    break;
+
+            }
+//            String str = (String)msg.obj;
+//            Toast.makeText(getApplicationContext(),
+//                    "From Service -> " + str, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public void sendMessage(int msgType) {
+        Message message = Message.obtain();
+        switch (msgType) {
+            case Constants.MSG_SOFTMETER_ON:
+                message.what = msgType;
+                break;
+            case Constants.MSG_SOFTMETER_OFF:
+                message.what = msgType;
+                break;
+            default :
+                break;
+        }
+        try {
+            mServiceMessenger.send(message);
+        } catch (Exception e) {
+//			FragmentTabsPager fTP = new FragmentTabsPager();
+//			fTP.handleException("sendMessage: " + e.getLocalizedMessage());
+        }
+
+//        Message msg = new Message();
+//        msg.obj = "Hi service..";
+//        try {
+//            mServiceMessenger.send(msg);
+//        } catch (RemoteException e) {
+//            e.printStackTrace();
+//        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(!startBtn.isEnabled())
+            Toast.makeText(this, "PowerOff Meter First, then Retry", Toast.LENGTH_LONG).show();
+        else
+        super.onBackPressed();
     }
 }
