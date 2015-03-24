@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content" android:layout_height="wrap_content"
+    xmlns:bootstrap="http://schemas.android.com/apk/res-auto"
+    android:background="@layout/editext_border">
+
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+
+        android:id="@+id/RA1">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0.0M | 0.00min"
+            android:id="@+id/distTimeValue"
+            android:textSize="20sp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:textColor="@color/orange"/>
+        
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="GPS"
+            android:id="@+id/gpsValue"
+            android:textSize="20sp"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:textColor="@color/gps_green"/>
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/imageView"
+            android:layout_toLeftOf="@+id/gpsValue"
+            android:src="@drawable/gps_green"/>
+
+
+    </RelativeLayout>
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:id="@+id/RA2"
+        android:layout_below="@+id/RA1"
+        android:layout_centerVertical="true">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fare"
+        android:id="@+id/textView"
+        android:textSize="20sp"
+        android:textColor="#00FFFF"
+
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="  $"
+        android:id="@+id/textView1"
+        android:textColor="#FF0000"
+        android:textSize="20sp"
+        android:layout_toRightOf="@+id/textView"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Extras"
+        android:id="@+id/textView3"
+        android:textColor="#00FFFF"
+        android:textSize="20sp"
+        android:layout_toLeftOf="@+id/textView4"
+         />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="  $"
+        android:id="@+id/textView4"
+        android:textColor="#FF0000"
+        android:textSize="20sp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="45dp"
+        />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1.5"
+            android:id="@+id/extrasValue"
+            android:textColor="@color/darkyellow"
+            android:textSize="35sp"
+            android:layout_alignLeft="@+id/textView4"
+            android:layout_below="@+id/textView4" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0.0"
+            android:id="@+id/fareValue"
+            android:textColor="#FF0000"
+            android:textSize="35sp"
+            android:layout_alignLeft="@+id/textView1"
+            android:layout_below="@+id/textView1" />
+
+
+        <com.beardedhen.androidbootstrap.BootstrapButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="MeterOn"
+            android:id="@+id/hiredButton"
+            bootstrap:bb_icon_right="fa-play"
+            bootstrap:bb_type="success"
+            bootstrap:bb_roundedCorners="true"
+            android:layout_gravity="bottom"
+            android:layout_marginRight="10dp"
+            bootstrap:bb_size="xsmall"
+            android:layout_alignLeft="@+id/textView"
+            android:layout_below="@+id/fareValue"
+            />
+
+        <com.beardedhen.androidbootstrap.BootstrapButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TimeOff"
+            android:id="@+id/timeOffButton"
+            bootstrap:bb_icon_right="fa-pause"
+            bootstrap:bb_type="danger"
+            bootstrap:bb_roundedCorners="true"
+            android:layout_gravity="bottom"
+            android:layout_marginRight="10dp"
+            bootstrap:bb_size="xsmall"
+            android:layout_toRightOf="@+id/hiredButton"
+            android:layout_alignTop="@+id/hiredButton"
+            />
+
+        <com.beardedhen.androidbootstrap.BootstrapButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="MeterOff"
+            android:id="@+id/meterOffButton"
+            bootstrap:bb_icon_right="fa-stop"
+            bootstrap:bb_type="primary"
+            bootstrap:bb_roundedCorners="true"
+            android:layout_gravity="bottom"
+            android:layout_marginRight="10dp"
+            bootstrap:bb_size="xsmall"
+            android:layout_toRightOf="@+id/timeOffButton"
+            android:layout_alignTop="@+id/timeOffButton"
+            />
+    </RelativeLayout>
+</RelativeLayout>
