@@ -8,174 +8,245 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context=".MainActivity"
-    android:keepScreenOn="true">
-
+    android:keepScreenOn="true"
+    android:background="@color/soft_blue">
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/et_height"
+    android:minHeight="@dimen/et_height"
+    android:id="@+id/LL20"
+    android:layout_marginTop="5dp">
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_width="0px"
+        android:layout_height="match_parent"
+        android:textSize="@dimen/primary_font"
         android:text="APF($): "
         android:id="@+id/apfLbl"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_marginBottom="10dp"
+        android:layout_weight="3"
+        android:textColor="@color/soft_orange"
          />
 
     <EditText
         android:id="@+id/apfVal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0px"
+        android:layout_height="match_parent"
         android:inputType="numberDecimal"
         android:ems="10"
-        android:textSize="15sp"
-        android:layout_alignTop="@+id/apfLbl"
-        android:layout_toRightOf="@+id/apfLbl"
-        android:layout_toEndOf="@+id/apfLbl"
-        />
+        android:textSize="@dimen/primary_font"
+        android:layout_weight="7"
+         />
+</LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/et_height"
+        android:minHeight="@dimen/et_height"
+        android:id="@+id/LL21"
+        android:layout_below="@+id/LL20"
+        android:layout_marginTop="5dp"
+        >
+
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_width="0px"
+        android:layout_height="match_parent"
+        android:textSize="@dimen/primary_font"
         android:text="PUM(M): "
         android:id="@+id/pumLbl"
         android:layout_below="@+id/apfLbl"
-        android:layout_marginBottom="10dp"/>
+        android:layout_weight="3"
+        android:textColor="@color/soft_orange"
+        />
 
     <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0px"
+        android:layout_height="match_parent"
         android:inputType="numberDecimal"
         android:ems="10"
+        android:textSize="@dimen/primary_font"
         android:id="@+id/pumVal"
-        android:layout_toRightOf="@+id/pumLbl"
-        android:layout_alignTop="@+id/pumLbl"
-        android:layout_toEndOf="@+id/pumLbl"
-        />
+        android:layout_weight="7"
+
+         />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/et_height"
+        android:id="@+id/LL22"
+        android:layout_below="@+id/LL21"
+        android:layout_marginTop="5dp">
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_width="0px"
+        android:layout_height="match_parent"
+        android:textSize="@dimen/primary_font"
         android:text="PUT(min): "
         android:id="@+id/putLbl"
-        android:layout_below="@+id/pumLbl"
-        android:layout_marginBottom="10dp" />
+        android:layout_weight="3"
+        android:textColor="@color/soft_orange"
 
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="numberDecimal"
-        android:ems="10"
-        android:id="@+id/putVal"
-        android:layout_alignTop="@+id/putLbl"
-        android:layout_toRightOf="@+id/putLbl"
-        android:layout_toEndOf="@+id/putLbl"
         />
 
+    <EditText
+        android:layout_width="0px"
+        android:layout_height="match_parent"
+        android:inputType="numberDecimal"
+        android:ems="10"
+        android:textSize="@dimen/primary_font"
+        android:id="@+id/putVal"
+        android:layout_weight="7"
+
+         />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/et_height"
+        android:id="@+id/LL23"
+        android:layout_below="@+id/LL22"
+        android:layout_marginTop="5dp">
     <TextView
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_width="0px"
+        android:layout_height="match_parent"
+        android:textSize="@dimen/primary_font"
     android:text="ADU(M): "
     android:id="@+id/aduLbl"
-    android:layout_below="@+id/putLbl"
-    android:layout_marginBottom="10dp" />
+        android:layout_weight="3"
+        android:textColor="@color/soft_orange"
+
+     />
 
     <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0px"
+        android:layout_height="match_parent"
         android:inputType="numberDecimal"
         android:ems="10"
+        android:textSize="@dimen/primary_font"
         android:id="@+id/aduVal"
-        android:layout_alignTop="@+id/aduLbl"
-        android:layout_toRightOf="@+id/aduLbl"
-        android:layout_toEndOf="@+id/aduLbl"
-        />
+        android:layout_weight="7"
 
+        />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/et_height"
+        android:id="@+id/LL24"
+        android:layout_below="@+id/LL23"
+        android:layout_marginTop="5dp">
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_width="0px"
+        android:layout_height="match_parent"
+        android:textSize="@dimen/primary_font"
         android:text="ADC($): "
         android:id="@+id/adcLbl"
-        android:layout_below="@+id/aduLbl"
-        android:layout_marginBottom="10dp" />
+        android:layout_weight="3"
+        android:textColor="@color/soft_orange"
+
+         />
 
     <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0px"
+        android:layout_height="match_parent"
         android:inputType="numberDecimal"
         android:ems="10"
         android:id="@+id/adcVal"
-        android:layout_alignTop="@+id/adcLbl"
-        android:layout_toRightOf="@+id/adcLbl"
-        android:layout_toEndOf="@+id/adcLbl"
+        android:layout_weight="7"
+        android:textSize="@dimen/primary_font"
+
         />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/et_height"
+        android:id="@+id/LL25"
+        android:layout_below="@+id/LL24"
+        android:layout_marginTop="5dp">
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_width="0px"
+        android:layout_height="match_parent"
+        android:textSize="@dimen/primary_font"
         android:text="ATU(min): "
         android:id="@+id/atuLbl"
-        android:layout_below="@+id/adcLbl"
-        android:layout_marginBottom="10dp" />
+        android:layout_weight="3"
+        android:textColor="@color/soft_orange"
+
+        />
 
     <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0px"
+        android:layout_height="match_parent"
         android:inputType="numberDecimal"
         android:ems="10"
         android:id="@+id/atuVal"
-        android:layout_alignTop="@+id/atuLbl"
-        android:layout_toRightOf="@+id/atuLbl"
-        android:layout_toEndOf="@+id/atuLbl"
+        android:layout_weight="7"
+        android:textSize="@dimen/primary_font"
+
         />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/et_height"
+        android:id="@+id/LL26"
+        android:layout_below="@+id/LL25"
+        android:layout_marginTop="5dp">
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_width="0px"
+        android:layout_height="match_parent"
+        android:textSize="@dimen/primary_font"
         android:text="ATC($): "
         android:id="@+id/atcLbl"
-        android:layout_below="@+id/atuLbl"
-        android:layout_marginBottom="10dp" />
+        android:layout_weight="3"
+        android:textColor="@color/soft_orange"
+
+         />
 
     <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0px"
+        android:layout_height="match_parent"
         android:inputType="numberDecimal"
         android:ems="10"
         android:id="@+id/atcVal"
-        android:layout_alignTop="@+id/atcLbl"
-        android:layout_toRightOf="@+id/atcLbl"
-        android:layout_toEndOf="@+id/atcLbl"
+        android:layout_weight="7"
+        android:textSize="@dimen/primary_font"
         />
-
+    </LinearLayout>
     <LinearLayout
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_width="fill_parent"
+        android:minWidth="@dimen/btn_width"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:id="@+id/linearLayout3">
+        android:id="@+id/linearLayout3"
+
+        >
 
         <Button
-            android:layout_width="wrap_content"
+            android:layout_width="@dimen/btn_width"
             android:layout_height="wrap_content"
             android:text="PowerOn"
             android:id="@+id/startButton"
-            android:layout_gravity="bottom"
-            android:layout_marginRight="10dp"
-            />
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/button_gray"
+            android:textColor="@drawable/buttoncolor"
+             />
 
 
         <Button
-            android:layout_width="wrap_content"
+            android:layout_width="@dimen/btn_width"
             android:layout_height="wrap_content"
             android:text="PowerOff"
             android:id="@+id/stopButton"
-            android:layout_gravity="bottom"
-            android:layout_marginRight="10dp"
+            android:layout_marginTop="5dp"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/button_gray"
+            android:textColor="@drawable/buttoncolor"
             />
 
     </LinearLayout>

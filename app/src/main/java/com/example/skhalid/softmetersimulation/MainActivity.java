@@ -92,7 +92,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     protected Boolean mRequestingLocationUpdates;
     public static SharedPreferences pref;
     protected String mAddressOutput;
-
+    private android.support.v7.app.ActionBar actionBar;
     /**
      * Receiver registered with this activity to get the response from FetchAddressIntentService.
      */
@@ -117,7 +117,17 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        actionBar = getSupportActionBar();
 
+        actionBar.setDisplayShowCustomEnabled(true);
+        actionBar.setCustomView(R.layout.action_bar);
+
+
+        Typeface tf = Typeface.createFromAsset(getApplicationContext().getAssets(),
+                "ManilaSansBld.otf");
+        TextView title = (TextView) findViewById(R.id.actionbartextview);
+
+        title.setTypeface(tf);
         if (!isGooglePlayServicesAvailable()) {
             finish();
         }

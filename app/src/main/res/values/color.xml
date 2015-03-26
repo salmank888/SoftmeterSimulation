@@ -22,9 +22,14 @@
   <color name="slider_pressed">#7D7D7D</color>
   <color name="slider_divider">#1087B8</color>
   <color name="soft_green">#25C4A4</color>
+    <color name="softn_green">#FF00BFC4</color>
+    <color name="softnn_green">#ff07c489</color>
+    <color name="strock">#008080</color>
   <color name="soft_blue">#1E2939</color>
   <color name="soft_orange">#F46E0B</color>
   <color name="gps_green">#14Fe02</color>
   <color name="gps_red">#Fe0202</color>
+    <color name="actionbar_blue">#800D65FE</color>
+    <color name="app_blue">#0D65FE</color>
 
 </resources>
