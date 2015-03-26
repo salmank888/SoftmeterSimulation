@@ -45,9 +45,9 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
     private TextView distanceTimeValue;
     private TextView fareVal;
     private TextView bookingVal;
+    private TextView meterStatus;
     private BootstrapButton meterOnBtn;
     private BootstrapButton timeOffBtn;
-    private BootstrapButton meterOffBtn;
     protected ArrayList<LatiLongi> coordinatesList;
 
     double deltaTime = 1.0/6.0; //Seconds
@@ -87,14 +87,16 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
 
         meterOnBtn = (BootstrapButton) findViewById(R.id.hiredButton);
         timeOffBtn = (BootstrapButton) findViewById(R.id.timeOffButton);
-        meterOffBtn = (BootstrapButton) findViewById(R.id.meterOffButton);
+
+
+        meterStatus = (TextView) findViewById(R.id.meterState);
 
         timeOffBtn.setBootstrapButtonEnabled(false);
-        meterOffBtn.setBootstrapButtonEnabled(false);
+
 
         meterOnBtn.setOnClickListener(this);
         timeOffBtn.setOnClickListener(this);
-        meterOffBtn.setOnClickListener(this);
+
 
         gestureDetector = new GestureDetector(ctx, new GestureListener());
 		windowManager = (WindowManager) ctx.getSystemService("window"); // ini the windowManager
@@ -170,74 +172,62 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.hiredButton:
-//                mRequestingLocationUpdates = true;
-//                if(apfVal.getText().toString().length() > 0 && pumVal.getText().toString().length() > 0 && putVal.getText().toString().length() > 0 && aduVal.getText().toString().length() > 0 && adcVal.getText().toString().length() > 0 && atuVal.getText().toString().length() > 0 && atcVal.getText().toString().length() > 0) {
+                if (meterStatus.getText().toString().trim().equalsIgnoreCase("For Hire")){
                     if(K == 0) {
                         readTextFile();
-//                        ambPickupFee = Double.parseDouble(apfVal.getText().toString()); //APF
-//                        puMiles = Double.parseDouble(pumVal.getText().toString()); // PUM
-//                        puTime = Double.parseDouble(putVal.getText().toString());
-//
-//                        additionalDistanceUnit = Double.parseDouble(aduVal.getText().toString()); // ADU - Fraction Of M
-//                        additionalDistanceUnitCost = Double.parseDouble(adcVal.getText().toString()); // ADC
-//
-//                        additionalTimeUnit = Double.parseDouble(atuVal.getText().toString()); // ATU - Fraction of Minute
-//                        additionalTimeUnitCost =  Double.parseDouble(atcVal.getText().toString()); //ATC
-//
-//                        apfVal.setEnabled(false);
-//                        pumVal.setEnabled(false);
-//                        putVal.setEnabled(false);
-//
-//                        aduVal.setEnabled(false);
-//                        adcVal.setEnabled(false);
-//                        atuVal.setEnabled(false);
-//                        atcVal.setEnabled(false);
+
                         FloatingService.sendMessageToLauncherActivity(Constants.MSG_DISABLE_FIELDS);
 
                     }
 
                     meterOnBtn.setBootstrapButtonEnabled(false);
                     timeOffBtn.setBootstrapButtonEnabled(true);
-                    meterOffBtn.setBootstrapButtonEnabled(true);
+                    meterOnBtn.setBootstrapType("primary");
+                    meterOnBtn.setText("MeterOff");
+                    meterOnBtn.setRightIcon("fa-stop");
+                    meterStatus.setText("Hired");
                     if(MainActivity.isTestMode)
                         calculateAndShowFarefromFile();
                     else
                         calculateAndShowFare();
-//                }else
-//                    Toast.makeText(ctx, "Provide Proper Values of Fields", Toast.LENGTH_LONG).show();
-                break;
-            case R.id.timeOffButton:
-                timeOffBtn.setBootstrapButtonEnabled(false);
-                meterOnBtn.setBootstrapButtonEnabled(true);
-                future.cancel(true);
-                break;
-            case R.id.meterOffButton:
-                if(future.isCancelled()) {
-                    totalDistance = 0.0; //M
-                    totalTime = 0.0; // Minutes
-                    K = 0; //Iterator
-                    accumDeltaD = 0.0;  //M
-                    acccumDeltaT = 0.0; //Minutes
-//                    totalDistanceVal.setText(dFormat.format(totalDistance));
-//                    totalTimeVal.setText(dFormat.format(totalTime));
-                    fareVal.setText(dFormat.format(0.0));
-                    distanceTimeValue.setText("0.0M | 0.00min");
-//                    apfVal.setEnabled(true);
-//                    pumVal.setEnabled(true);
-//                    putVal.setEnabled(true);
-//
-//                    aduVal.setEnabled(true);
-//                    adcVal.setEnabled(true);
-//                    atuVal.setEnabled(true);
-//                    atcVal.setEnabled(true);
+                } else if(meterStatus.getText().toString().trim().equalsIgnoreCase("Time Off")){
+                    if(future.isCancelled()) {
+                        totalDistance = 0.0; //M
+                        totalTime = 0.0; // Minutes
+                        K = 0; //Iterator
+                        accumDeltaD = 0.0;  //M
+                        acccumDeltaT = 0.0; //Minutes
 
-                    timeOffBtn.setBootstrapButtonEnabled(true);
-                    meterOnBtn.setBootstrapButtonEnabled(true);
-                    FloatingService.sendMessageToLauncherActivity(Constants.MSG_ENABLE_FIELDS);
+                        fareVal.setText(dFormat.format(0.0));
+                        distanceTimeValue.setText("0.0M | 0.00min");
+
+                        timeOffBtn.setBootstrapButtonEnabled(false);
+                        meterOnBtn.setBootstrapButtonEnabled(true);
+                        meterOnBtn.setBootstrapType("success");
+                        meterOnBtn.setText("MeterOn");
+                        meterOnBtn.setRightIcon("fa-play");
+                        meterStatus.setText("For Hire");
+                        FloatingService.sendMessageToLauncherActivity(Constants.MSG_ENABLE_FIELDS);
+
+                    }
+                    else
+                        Toast.makeText(ctx, "Please Stop First", Toast.LENGTH_LONG).show();
 
                 }
-                else
-                    Toast.makeText(ctx, "Please Stop First", Toast.LENGTH_LONG).show();
+
+                break;
+            case R.id.timeOffButton:
+                if(meterStatus.getText().toString().trim().equalsIgnoreCase("Hired")) {
+                    timeOffBtn.setText("TimeOn");
+                    meterOnBtn.setBootstrapButtonEnabled(true);
+                    meterStatus.setText("Time Off");
+                    future.cancel(true);
+                } else if(meterStatus.getText().toString().trim().equalsIgnoreCase("Time Off")){
+                    timeOffBtn.setText("TimeOff");
+                    meterOnBtn.setBootstrapButtonEnabled(false);
+                    meterStatus.setText("Hired");
+                    meterOnBtn.performClick();
+                }
 
                 break;
             default:

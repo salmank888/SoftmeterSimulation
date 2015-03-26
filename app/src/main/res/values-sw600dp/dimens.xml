@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="label_font">36sp</dimen>
+    <dimen name="value_font">60sp</dimen>
+    <dimen name="primary_font">40sp</dimen>
+    <dimen name="et_height">50sp</dimen>
+    <dimen name="btn_width">350dp</dimen>
+</resources>
