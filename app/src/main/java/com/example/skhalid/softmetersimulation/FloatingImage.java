@@ -320,19 +320,24 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
                             if(MainActivity.additionalTimeUnit > 0) {
                                 acccumDeltaT = acccumDeltaT + deltaTime;
                                 timeCost = (int) (acccumDeltaT / MainActivity.additionalTimeUnit) * MainActivity.additionalTimeUnitCost;
-                                acccumDeltaT = acccumDeltaT % MainActivity.additionalTimeUnit;
                             }
                             if(MainActivity.additionalDistanceUnit > 0) {
                                 accumDeltaD = accumDeltaD + deltaDistance;
                                 distanceCost = (int) (accumDeltaD / MainActivity.additionalDistanceUnit) * MainActivity.additionalDistanceUnitCost;
+                            }
+
+                            if(MainActivity.additionalTimeUnit > 0) {
+                                if(acccumDeltaT > MainActivity.additionalTimeUnit)
+                                    accumDeltaD = 0.0;
+                                acccumDeltaT = acccumDeltaT % MainActivity.additionalTimeUnit;
+                            }
+
+                            if(MainActivity.additionalDistanceUnit > 0) {
+                                if(accumDeltaD >= MainActivity.additionalDistanceUnit)
+                                    acccumDeltaT = 0.0;
                                 accumDeltaD = accumDeltaD % MainActivity.additionalDistanceUnit;
                             }
-//                            if(!isTestMode) {
-                            if (timeCost > distanceCost)
-                                accumDeltaD = 0.0;
-                            else
-                                acccumDeltaT = 0.0;
-//                            }
+
                             meterValue = meterValue + Math.max(distanceCost, timeCost);
 
                         }
@@ -377,20 +382,24 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
                             if(MainActivity.additionalTimeUnit > 0) {
                                 acccumDeltaT = acccumDeltaT + deltaTime;
                                 timeCost = (int) (acccumDeltaT / MainActivity.additionalTimeUnit) * MainActivity.additionalTimeUnitCost;
-                                acccumDeltaT = acccumDeltaT % MainActivity.additionalTimeUnit;
                             }
                             if(MainActivity.additionalDistanceUnit > 0) {
                                 accumDeltaD = accumDeltaD + deltaDistance;
                                 distanceCost = (int) (accumDeltaD / MainActivity.additionalDistanceUnit) * MainActivity.additionalDistanceUnitCost;
+                            }
+
+                            if(MainActivity.additionalTimeUnit > 0) {
+                                if(acccumDeltaT > MainActivity.additionalTimeUnit)
+                                    accumDeltaD = 0.0;
+                                acccumDeltaT = acccumDeltaT % MainActivity.additionalTimeUnit;
+                            }
+
+                            if(MainActivity.additionalDistanceUnit > 0) {
+                                if(accumDeltaD > MainActivity.additionalDistanceUnit)
+                                    acccumDeltaT = 0.0;
                                 accumDeltaD = accumDeltaD % MainActivity.additionalDistanceUnit;
                             }
 
-//                            if(!isTestMode) {
-                            if (timeCost >= distanceCost)
-                                accumDeltaD = 0.0;
-                            else
-                                acccumDeltaT = 0.0;
-//                            }
                             meterValue = meterValue + Math.max(distanceCost, timeCost);
 
                         }
