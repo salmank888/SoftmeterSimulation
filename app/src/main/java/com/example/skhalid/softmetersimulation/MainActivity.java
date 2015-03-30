@@ -5,8 +5,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
@@ -18,6 +21,7 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.provider.Settings;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -26,6 +30,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
@@ -44,6 +49,8 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.yalantis.contextmenu.lib.ContextMenuDialogFragment;
+import com.yalantis.contextmenu.lib.MenuObject;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -51,6 +58,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -83,7 +91,6 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
     public static double additionalTimeUnit = 0.25; // ATU - Fraction of Minute
     public static double additionalTimeUnitCost =  0.15; //ATC
-    public static boolean isTestMode = true;
 
     private GoogleApiClient mGoogleApiClient;
     private Location mLastLocation;
@@ -102,6 +109,8 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     private String locationProviders;
     private int locationMode;
     private Messenger mServiceMessenger;
+    private DialogFragment mMenuDialogFragment;
+
     private ServiceConnection mCon = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             mServiceMessenger = new Messenger(service);
@@ -122,6 +131,18 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         actionBar.setDisplayShowCustomEnabled(true);
         actionBar.setCustomView(R.layout.action_bar);
 
+
+        MenuObject close = new MenuObject();
+        close.setResource(R.drawable.icn_close);
+
+        MenuObject send = new MenuObject("Send message");
+        send.setResource(R.drawable.icn_1);
+
+        List<MenuObject> menuObjects = new ArrayList<>();
+        menuObjects.add(close);
+        menuObjects.add(send);
+
+        mMenuDialogFragment = ContextMenuDialogFragment.newInstance((int) getResources().getDimension(R.dimen.tool_bar_height), getMenuObjects());
 
         Typeface tf = Typeface.createFromAsset(getApplicationContext().getAssets(),
                 "ManilaSansBld.otf");
@@ -316,31 +337,19 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+    public boolean onCreateOptionsMenu(final Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.item1) {
-                item.setChecked(true);
-                isTestMode = true;
-
-        }else if(id == R.id.item2){
-                item.setChecked(true);
-                isTestMode = false;
-
+        switch (item.getItemId()) {
+            case R.id.context_menu:
+                mMenuDialogFragment.show(getSupportFragmentManager(), "ContextMenuDialogFragment");
+                break;
         }
-
-        Toast.makeText(getApplicationContext(), "Fare Calculation According to " + item.getTitle(), Toast.LENGTH_LONG).show();
         return super.onOptionsItemSelected(item);
     }
 
@@ -351,33 +360,9 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 sendMessage(Constants.MSG_SOFTMETER_ON);
                 stopBtn.setEnabled(true);
                 startBtn.setEnabled(false);
-//                mRequestingLocationUpdates = true;
-//                if(apfVal.getText().toString().length() > 0 && pumVal.getText().toString().length() > 0 && putVal.getText().toString().length() > 0 && aduVal.getText().toString().length() > 0 && adcVal.getText().toString().length() > 0 && atuVal.getText().toString().length() > 0 && atcVal.getText().toString().length() > 0) {
-//                    if(K == 0) {
-//                        readTextFile();
-//                         ambPickupFee = Double.parseDouble(apfVal.getText().toString()); //APF
-//                         puMiles = Double.parseDouble(pumVal.getText().toString()); // PUM
-//                         puTime = Double.parseDouble(putVal.getText().toString());
-//
-//                         additionalDistanceUnit = Double.parseDouble(aduVal.getText().toString()); // ADU - Fraction Of KM
-//                         additionalDistanceUnitCost = Double.parseDouble(adcVal.getText().toString()); // ADC
-//
-//                         additionalTimeUnit = Double.parseDouble(atuVal.getText().toString()); // ATU - Fraction of Minute
-//                         additionalTimeUnitCost =  Double.parseDouble(atcVal.getText().toString()); //ATC
-//
-
-//                    }
-//
-//                    startBtn.setBootstrapButtonEnabled(false);
-//                    stopBtn.setBootstrapButtonEnabled(true);
-//                    resetBtn.setBootstrapButtonEnabled(true);
-//                    if(isTestMode)
-//                    calculateAndShowFarefromFile();
-//                    else
-//                        calculateAndShowFare();
-//                }else
-//                Toast.makeText(getApplicationContext(), "Provide Proper Values of Fields", Toast.LENGTH_LONG).show();
+//                runTcpClientAsService();
                 break;
+
             case R.id.stopButton:
                 stopBtn.setEnabled(false);
                 startBtn.setEnabled(true);
@@ -497,13 +482,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
             pref.edit().putString("Lattitude", String.valueOf(mCurrentLocation.getLatitude())).putString("Longitude", String.valueOf(mCurrentLocation.getLongitude())).commit();
             Toast.makeText(this, getResources().getString(R.string.location_updated_message) + mCurrentLocation.getAccuracy() + " meters",
                     Toast.LENGTH_SHORT).show();
-            sendMessage(Constants.MSG_LOCATION_CHANGED);
-//            if (!isTestMode)
-//                if (future != null)
-//                if (future.isCancelled()) {
-//                    tempLat = Double.parseDouble(pref.getString("Lattitude", "0.0"));
-//                    tempLong = Double.parseDouble(pref.getString("Longitude", "0.0"));
-//                }
+//            sendMessage(Constants.MSG_LOCATION_CHANGED);
             startIntentService();
         }
     }
@@ -649,5 +628,59 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
             Toast.makeText(this, "PowerOff Meter First, then Retry", Toast.LENGTH_LONG).show();
         else
         super.onBackPressed();
+    }
+
+    private void runTcpClientAsService() {
+        Intent lIntent = new Intent(MainActivity.this, TcpClientService.class);
+        this.startService(lIntent);
+    }
+
+    private List<MenuObject> getMenuObjects() {
+        // You can use any [resource, bitmap, drawable, color] as image:
+        // item.setResource(...)
+        // item.setBitmap(...)
+        // item.setDrawable(...)
+        // item.setColor(...)
+        // You can set image ScaleType:
+        // item.setScaleType(ScaleType.FIT_XY)
+        // You can use any [resource, drawable, color] as background:
+        // item.setBgResource(...)
+        // item.setBgDrawable(...)
+        // item.setBgColor(...)
+        // You can use any [color] as text color:
+        // item.setTextColor(...)
+        // You can set any [color] as divider color:
+        // item.setDividerColor(...)
+
+        List<MenuObject> menuObjects = new ArrayList<>();
+
+        MenuObject close = new MenuObject();
+        close.setResource(R.drawable.icn_close);
+
+        MenuObject send = new MenuObject("Send message");
+        send.setResource(R.drawable.icn_1);
+
+//        MenuObject like = new MenuObject("Like profile");
+//        Bitmap b = BitmapFactory.decodeResource(getResources(), R.drawable.icn_2);
+//        like.setBitmap(b);
+//
+//        MenuObject addFr = new MenuObject("Add to friends");
+//        BitmapDrawable bd = new BitmapDrawable(getResources(),
+//                BitmapFactory.decodeResource(getResources(), R.drawable.icn_3));
+//        addFr.setDrawable(bd);
+//
+//        MenuObject addFav = new MenuObject("Add to favorites");
+//        addFav.setResource(R.drawable.icn_4);
+//
+//        MenuObject block = new MenuObject("Block user");
+//        block.setResource(R.drawable.icn_5);
+
+        menuObjects.add(close);
+        menuObjects.add(send);
+//        menuObjects.add(like);
+//        menuObjects.add(addFr);
+//        menuObjects.add(addFav);
+//        menuObjects.add(block);
+        return menuObjects;
     }
 }
