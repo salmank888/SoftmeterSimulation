@@ -233,7 +233,7 @@
             android:text="PowerOn"
             android:id="@+id/startButton"
             android:layout_gravity="center_horizontal"
-            android:background="@drawable/button_gray"
+            android:background="@drawable/button_green"
             android:textColor="@drawable/buttoncolor"
              />
 
@@ -245,7 +245,7 @@
             android:id="@+id/stopButton"
             android:layout_marginTop="5dp"
             android:layout_gravity="center_horizontal"
-            android:background="@drawable/button_gray"
+            android:background="@drawable/button_green"
             android:textColor="@drawable/buttoncolor"
             />
 

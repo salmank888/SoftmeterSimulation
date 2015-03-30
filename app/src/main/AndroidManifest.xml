@@ -6,6 +6,9 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" android:required="false"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:required="false"/>
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+
 
 
 
@@ -33,6 +36,9 @@ service, even when using an explicit intent. -->
 
         <meta-data android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
+
+        <service android:enabled="true" android:name=".TcpClientService" />
+
     </application>
 
 </manifest>

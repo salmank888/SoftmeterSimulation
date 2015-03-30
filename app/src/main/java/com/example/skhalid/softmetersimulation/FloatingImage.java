@@ -1,7 +1,7 @@
 package com.example.skhalid.softmetersimulation;
 
-import android.app.Activity;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.graphics.PixelFormat;
 import android.graphics.Typeface;
 import android.os.Environment;
@@ -14,6 +14,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,8 +23,10 @@ import com.beardedhen.androidbootstrap.BootstrapButton;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
@@ -43,6 +46,8 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
 	float initialTouchY;
 	private LayoutInflater mInflater;
     private TextView distanceTimeValue;
+    private TextView gpsVal;
+    private ImageView gpsImageVal;
     private TextView fareVal;
     private TextView bookingVal;
     private TextView meterStatus;
@@ -66,6 +71,11 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
     final DecimalFormat dFormat = new DecimalFormat("0.00");
     Future<?> future;
     Handler mainHandler;
+    private boolean timeOffPressed = false;
+    private String tempDir;	// Binder given to clients
+    private OutputStreamWriter myOutWriter = null;
+    private FileOutputStream fOut = null;
+    private File myFile = null;
 
     /**
 	 * @param context
@@ -77,9 +87,10 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
 		
 		 LayoutInflater.from(context).inflate(R.layout.softmeternew, this, true);
 		 
-		 Typeface tf = Typeface.createFromAsset(context.getAssets(),
-                 "digital-7.ttf");
+		 Typeface tf = Typeface.createFromAsset(context.getAssets(), "digital-7.ttf");
          distanceTimeValue = (TextView) findViewById(R.id.distTimeValue);
+         gpsVal = (TextView) findViewById(R.id.gpsValue);
+         gpsImageVal = (ImageView) findViewById(R.id.gpsImage);
 		 fareVal = (TextView) findViewById(R.id.fareValue);
 		 bookingVal = (TextView) findViewById(R.id.extrasValue);
 	     fareVal.setTypeface(tf);
@@ -112,7 +123,7 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
 		params.x = 0; // horizontal location of imageView
 		params.y = 100; // vertical location of imageView
 		params.height = LayoutParams.WRAP_CONTENT; // given it a fixed height in case of large image
-		params.width = LayoutParams.WRAP_CONTENT; // given it a fixed width in case of large image
+		params.width = LayoutParams.MATCH_PARENT; // given it a fixed width in case of large image
 		params.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN;
 		windowManager.addView(this, params); // adding the imageView & the  params to the WindowsManger.
 
@@ -174,8 +185,8 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
             case R.id.hiredButton:
                 if (meterStatus.getText().toString().trim().equalsIgnoreCase("For Hire")){
                     if(K == 0) {
-                        readTextFile();
-
+//                        readTextFile();
+                        openTxtFileforWriting();
                         FloatingService.sendMessageToLauncherActivity(Constants.MSG_DISABLE_FIELDS);
 
                     }
@@ -186,12 +197,12 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
                     meterOnBtn.setText("MeterOff");
                     meterOnBtn.setRightIcon("fa-stop");
                     meterStatus.setText("Hired");
-                    if(MainActivity.isTestMode)
-                        calculateAndShowFarefromFile();
-                    else
+                    timeOffBtn.setText("TimeOff");
                         calculateAndShowFare();
+
                 } else if(meterStatus.getText().toString().trim().equalsIgnoreCase("Time Off")){
-                    if(future.isCancelled()) {
+                    if(timeOffPressed) {
+                        future.cancel(true);
                         totalDistance = 0.0; //M
                         totalTime = 0.0; // Minutes
                         K = 0; //Iterator
@@ -208,7 +219,13 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
                         meterOnBtn.setRightIcon("fa-play");
                         meterStatus.setText("For Hire");
                         FloatingService.sendMessageToLauncherActivity(Constants.MSG_ENABLE_FIELDS);
-
+                        timeOffPressed = false;
+                        try {
+                            myOutWriter.close();
+                            fOut.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                     else
                         Toast.makeText(ctx, "Please Stop First", Toast.LENGTH_LONG).show();
@@ -221,12 +238,13 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
                     timeOffBtn.setText("TimeOn");
                     meterOnBtn.setBootstrapButtonEnabled(true);
                     meterStatus.setText("Time Off");
-                    future.cancel(true);
+                    timeOffPressed  = true;
                 } else if(meterStatus.getText().toString().trim().equalsIgnoreCase("Time Off")){
                     timeOffBtn.setText("TimeOff");
                     meterOnBtn.setBootstrapButtonEnabled(false);
                     meterStatus.setText("Hired");
-                    meterOnBtn.performClick();
+//                    meterOnBtn.performClick();
+                    timeOffPressed = false;
                 }
 
                 break;
@@ -244,7 +262,14 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
 
 		@Override
 		public boolean onDoubleTapEvent(MotionEvent e) { // perform Double tap on the ImageView
-			Toast.makeText(ctx, "Hi You Double Tap Me", Toast.LENGTH_SHORT).show();
+
+                distanceTimeValue.setVisibility(View.GONE);
+                meterStatus.setVisibility(View.GONE);
+                meterOnBtn.setVisibility(View.GONE);
+                timeOffBtn.setVisibility(View.GONE);
+                gpsImageVal.setVisibility(View.GONE);
+                gpsVal.setVisibility(View.GONE);
+
 			return false;
 		}
 
@@ -256,7 +281,13 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
 
 		@Override
 		public void onLongPress(MotionEvent e) { // perform long press on the ImageView
-			Toast.makeText(ctx, "Hi You Long Tap Me", Toast.LENGTH_SHORT).show();
+            distanceTimeValue.setEnabled(true);
+            distanceTimeValue.setVisibility(View.VISIBLE);
+            meterStatus.setVisibility(View.VISIBLE);
+            meterOnBtn.setVisibility(View.VISIBLE);
+            timeOffBtn.setVisibility(View.VISIBLE);
+            gpsImageVal.setVisibility(View.VISIBLE);
+            gpsVal.setVisibility(View.VISIBLE);
 		}
 	}
 	/**
@@ -270,14 +301,6 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
         scheduler.shutdownNow();
     }
 
-    public void onLocationChanged(){
-              if (!MainActivity.isTestMode)
-                if (future != null)
-                if (future.isCancelled()) {
-                    tempLat = Double.parseDouble(MainActivity.pref.getString("Lattitude", "0.0"));
-                    tempLong = Double.parseDouble(MainActivity.pref.getString("Longitude", "0.0"));
-                }
-    }
     private void readTextFile(){
         //Find the directory for the SD Card using the API
 //*Don't* hardcode "/sdcard"
@@ -305,93 +328,188 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
         }
     }
 
-    private void calculateAndShowFarefromFile(){
-        future = scheduler.scheduleWithFixedDelay(new Runnable() {
-            @Override
-            public void run() {
-                if(K <= coordinatesList.size()) {
-                    if (K == 0) {
-                        meterValue = MainActivity.ambPickupFee;
-                    } else {
-                        deltaDistance = DistanceCalculator.CalculateDistance(tempLat, tempLong, coordinatesList.get(K).lat, coordinatesList.get(K).lon)/1609.34;
-                        totalDistance = totalDistance + deltaDistance;
-                        totalTime = totalTime + deltaTime;
-                        if(totalTime > MainActivity.puTime || totalDistance > MainActivity.puMiles){
-                            if(MainActivity.additionalTimeUnit > 0) {
-                                acccumDeltaT = acccumDeltaT + deltaTime;
-                                timeCost = (int) (acccumDeltaT / MainActivity.additionalTimeUnit) * MainActivity.additionalTimeUnitCost;
-                                acccumDeltaT = acccumDeltaT % MainActivity.additionalTimeUnit;
-                            }
-                            if(MainActivity.additionalDistanceUnit > 0) {
-                                accumDeltaD = accumDeltaD + deltaDistance;
-                                distanceCost = (int) (accumDeltaD / MainActivity.additionalDistanceUnit) * MainActivity.additionalDistanceUnitCost;
-                                accumDeltaD = accumDeltaD % MainActivity.additionalDistanceUnit;
-                            }
-//                            if(!isTestMode) {
-                            if (timeCost > distanceCost)
-                                accumDeltaD = 0.0;
-                            else
-                                acccumDeltaT = 0.0;
+    private void openTxtFileforWriting(){
+        try {
+            tempDir = Environment.getExternalStorageDirectory() + "/SoftMeter/";
+            ContextWrapper cw = new ContextWrapper(ctx);
+            File directory = cw.getDir("SoftMeter", Context.MODE_PRIVATE);
+
+            prepareDirectory();
+            myFile = new File(tempDir, "lastTripData"+ System.currentTimeMillis() +".txt");
+            myFile.createNewFile();
+            fOut = new FileOutputStream(myFile);
+            myOutWriter = 	new OutputStreamWriter(fOut);
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean prepareDirectory() {
+        try {
+            if (makedirs()) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return false;
+        }
+    }
+
+    private boolean makedirs() {
+        File tempdir = new File(tempDir);
+        if (!tempdir.exists())
+            tempdir.mkdirs();
+
+
+        return (tempdir.isDirectory());
+    }
+
+//    private void calculateAndShowFarefromFile(){
+//        future = scheduler.scheduleWithFixedDelay(new Runnable() {
+//            @Override
+//            public void run() {
+//                if(K <= coordinatesList.size()) {
+//                    if (K == 0) {
+//                        meterValue = MainActivity.ambPickupFee;
+//                    } else {
+//                        deltaDistance = DistanceCalculator.CalculateDistance(tempLat, tempLong, coordinatesList.get(K).lat, coordinatesList.get(K).lon)/1609.34;
+//                        totalDistance = totalDistance + deltaDistance;
+//                        totalTime = totalTime + deltaTime;
+//                        if(totalTime > MainActivity.puTime || totalDistance > MainActivity.puMiles){
+//
+//                            if(MainActivity.additionalDistanceUnit > 0) {
+//                                accumDeltaD = accumDeltaD + deltaDistance;
+//                                distanceCost = (int) (round(accumDeltaD, 2) / MainActivity.additionalDistanceUnit) * MainActivity.additionalDistanceUnitCost;
 //                            }
-                            meterValue = meterValue + Math.max(distanceCost, timeCost);
-
-                        }
-                    }
-
-                    mainHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            fareVal.setText(dFormat.format(meterValue));
-                            distanceTimeValue.setText(dFormat.format(totalDistance) +"M | " + dFormat.format(totalTime) + "min");
-                        }
-                    });
-//                    ((Activity)ctx).runOnUiThread(new Runnable() {
+//
+//                            if(!timeOffPressed)
+//                            if(MainActivity.additionalTimeUnit > 0) {
+//                                acccumDeltaT = acccumDeltaT + deltaTime;
+//                                timeCost = (int) (round(acccumDeltaT, 2) / MainActivity.additionalTimeUnit) * MainActivity.additionalTimeUnitCost;
+//                            }
+//
+//                            if(MainActivity.additionalDistanceUnit > 0) {
+//                                if(round(accumDeltaD, 2) >= MainActivity.additionalDistanceUnit)
+//                                    acccumDeltaT = 0.0;
+//                                accumDeltaD = round(accumDeltaD, 2) % MainActivity.additionalDistanceUnit;
+//                            }
+//
+//                            if(!timeOffPressed)
+//                            if(MainActivity.additionalTimeUnit > 0) {
+//                                if(round(acccumDeltaT, 2) > MainActivity.additionalTimeUnit)
+//                                    accumDeltaD = 0.0;
+//                                acccumDeltaT = round(acccumDeltaT, 2) % MainActivity.additionalTimeUnit;
+//                            }
+//
+//                            if(timeOffPressed) {
+//                                meterValue = meterValue + distanceCost;
+//                                        try {
+//                                            myOutWriter.append(dFormat.format(totalDistance)+ "M" + "\t" + dFormat.format(totalTime)+ "min" + "\t" + "DistanceTic" + "\t" + dFormat.format(meterValue)+ "\n" );
+//                                        } catch (Exception e) {
+//                                            // TODO Auto-generated catch block
+//                                            e.printStackTrace();
+//                                        }
+//                            }
+//                            else {
+//                                meterValue = meterValue + Math.max(distanceCost, timeCost);
+//                                        try {
+//                                            String strToPrint;
+//                                            if(distanceCost > timeCost)
+//                                                strToPrint ="DistanceTic";
+//                                            else if(distanceCost < timeCost)
+//                                                strToPrint ="TimeTic";
+//                                            else
+//                                                strToPrint =" ";
+//
+//                                            myOutWriter.append(dFormat.format(totalDistance)+ "M\t" + dFormat.format(totalTime)+ "min\t" + strToPrint + "\t" + dFormat.format(meterValue) + "\n" );
+//                                        } catch (IOException e) {
+//                                            // TODO Auto-generated catch block
+//                                            e.printStackTrace();
+//                                        }
+//
+//                            }
+//
+//                        }
+//                    }
+//
+//                    mainHandler.post(new Runnable() {
 //                        @Override
 //                        public void run() {
-////                            totalDistanceVal.setText(dFormat.format(totalDistance));
-////                            totalTimeVal.setText(dFormat.format(totalTime));
 //                            fareVal.setText(dFormat.format(meterValue));
+//                            distanceTimeValue.setText(dFormat.format(totalDistance) +"M | " + dFormat.format(totalTime) + "min");
 //                        }
 //                    });
-
-                    tempLat = coordinatesList.get(K).lat;
-                    tempLong = coordinatesList.get(K).lon;
-                    K = K + 1;
-                }
-            }
-        }, 0, 10, TimeUnit.SECONDS);
-    }
+//
+//
+//                    tempLat = coordinatesList.get(K).lat;
+//                    tempLong = coordinatesList.get(K).lon;
+//                    K = K + 1;
+//                }
+//            }
+//        }, 0, 10, TimeUnit.SECONDS);
+//    }
 
     private void calculateAndShowFare(){
         future = scheduler.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
+                String strToPrint = "";
                 if(MainActivity.pref != null) {
                     if (K == 0) {
                         meterValue = MainActivity.ambPickupFee;
                     } else {
+                        strToPrint = " ";
                         deltaDistance = DistanceCalculator.CalculateDistance(tempLat, tempLong, Double.parseDouble(MainActivity.pref.getString("Lattitude","0.0")), Double.parseDouble(MainActivity.pref.getString("Longitude","0.0")))/1609.34;
                         totalDistance = totalDistance + deltaDistance;
                         totalTime = totalTime + deltaTime;
                         if(totalTime > MainActivity.puTime || totalDistance > MainActivity.puMiles){
-                            if(MainActivity.additionalTimeUnit > 0) {
-                                acccumDeltaT = acccumDeltaT + deltaTime;
-                                timeCost = (int) (acccumDeltaT / MainActivity.additionalTimeUnit) * MainActivity.additionalTimeUnitCost;
-                                acccumDeltaT = acccumDeltaT % MainActivity.additionalTimeUnit;
-                            }
+
                             if(MainActivity.additionalDistanceUnit > 0) {
                                 accumDeltaD = accumDeltaD + deltaDistance;
-                                distanceCost = (int) (accumDeltaD / MainActivity.additionalDistanceUnit) * MainActivity.additionalDistanceUnitCost;
-                                accumDeltaD = accumDeltaD % MainActivity.additionalDistanceUnit;
+                                distanceCost = (int) (round(accumDeltaD, 2) / MainActivity.additionalDistanceUnit) * MainActivity.additionalDistanceUnitCost;
                             }
 
-//                            if(!isTestMode) {
-                            if (timeCost >= distanceCost)
-                                accumDeltaD = 0.0;
+                            if(!timeOffPressed)
+                                if(MainActivity.additionalTimeUnit > 0) {
+                                    acccumDeltaT = acccumDeltaT + deltaTime;
+                                    timeCost = (int) (round(acccumDeltaT, 2) / MainActivity.additionalTimeUnit) * MainActivity.additionalTimeUnitCost;
+                                }
+
+                            if(MainActivity.additionalDistanceUnit > 0) {
+                                if(round(accumDeltaD, 2) >= MainActivity.additionalDistanceUnit) {
+                                    acccumDeltaT = 0.0;
+                                    strToPrint ="DistanceTic";
+                                }
+                                accumDeltaD = round(accumDeltaD, 2) % MainActivity.additionalDistanceUnit;
+                            }
+
+                            if(!timeOffPressed)
+                                if(MainActivity.additionalTimeUnit > 0) {
+                                    if(round(acccumDeltaT, 2) > MainActivity.additionalTimeUnit) {
+                                        accumDeltaD = 0.0;
+                                        strToPrint ="TimeTic";
+                                    }
+                                    acccumDeltaT = round(acccumDeltaT, 2) % MainActivity.additionalTimeUnit;
+                                }
+
+                            if(timeOffPressed)
+                                meterValue = meterValue + distanceCost;
                             else
-                                acccumDeltaT = 0.0;
-//                            }
-                            meterValue = meterValue + Math.max(distanceCost, timeCost);
+                                meterValue = meterValue + Math.max(distanceCost, timeCost);
+
+                                try {
+                                    myOutWriter.append(dFormat.format(totalDistance)+ "M\t" + dFormat.format(totalTime)+ "min\t" + strToPrint + "\t" + dFormat.format(meterValue) + "\n" );
+                                } catch (IOException e) {
+                                    // TODO Auto-generated catch block
+                                    e.printStackTrace();
+                                }
+
+
 
                         }
                     }
@@ -403,14 +521,7 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
                             distanceTimeValue.setText(dFormat.format(totalDistance) +"M | " + dFormat.format(totalTime) + "min");
                         }
                     });
-//                    runOnUiThread(new Runnable() {
-//                        @Override
-//                        public void run() {
-////                            totalDistanceVal.setText(dFormat.format(totalDistance));
-////                            totalTimeVal.setText(dFormat.format(totalTime));
-//                            fareVal.setText(dFormat.format(meterValue));
-//                        }
-//                    });
+
 
                     tempLat = Double.parseDouble(MainActivity.pref.getString("Lattitude","0.0"));
                     tempLong = Double.parseDouble(MainActivity.pref.getString("Longitude","0.0"));
@@ -420,4 +531,12 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
         }, 0, 10, TimeUnit.SECONDS);
     }
 
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+
+        long factor = (long) Math.pow(10, places);
+        value = value * factor;
+        long tmp = Math.round(value);
+        return (double) tmp / factor;
+    }
 }
