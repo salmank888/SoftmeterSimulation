@@ -58,7 +58,6 @@ public class FloatingService extends Service {
                     break;
 
                 case Constants.MSG_LOCATION_CHANGED:
-                    floatingImage.onLocationChanged();
                     break;
                 default:
                     break;

@@ -1,10 +1,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" tools:context=".MainActivity">
-    <group android:checkableBehavior="single">
-        <item android:id="@+id/item1" android:titleCondensed="Test" android:title="Mode Test" android:icon="@android:drawable/ic_menu_preferences" android:checked="true">
-        </item>
-        <item android:id="@+id/item2" android:titleCondensed="Production" android:title="Mode Production" android:icon="@android:drawable/ic_menu_preferences" >
-        </item>
-    </group>
+    <item
+        android:id="@+id/context_menu"
+        android:title="Menu"
+        android:icon="@android:drawable/ic_menu_add"
+        android:orderInCategory="100"
+        app:showAsAction="always" />
 </menu>
