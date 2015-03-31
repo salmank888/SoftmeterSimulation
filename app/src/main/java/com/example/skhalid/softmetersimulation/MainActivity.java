@@ -411,7 +411,10 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     protected void onDestroy() {
         unbindService(mCon);
         mGoogleApiClient.disconnect();
-
+        Intent intent = new Intent(this, FetchAddressIntentService.class);
+        stopService(intent);
+        Intent lIntent = new Intent(MainActivity.this, FloatingService.class);
+        stopService(lIntent);
         super.onDestroy();
     }
 

@@ -6,4 +6,9 @@
     <dimen name="primary_font">40sp</dimen>
     <dimen name="et_height">50sp</dimen>
     <dimen name="btn_width">350dp</dimen>
+    <dimen name="neg_margin">-8dp</dimen>
+    <dimen name="imgbtn_height">42dp</dimen>
+    <dimen name="imgbtn_width">42dp</dimen>
+    <dimen name="neg_margin1">-20dp</dimen>
+    <dimen name="splash_text">90sp</dimen>
 </resources>
