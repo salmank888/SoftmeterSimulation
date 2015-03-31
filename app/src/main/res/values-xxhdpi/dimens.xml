@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <dimen name="label_font">22sp</dimen>
-    <dimen name="value_font">32sp</dimen>
+    <dimen name="label_font">28sp</dimen>
+    <dimen name="value_font">38sp</dimen>
     <dimen name="primary_font">21sp</dimen>
     <dimen name="et_height">33sp</dimen>
     <dimen name="btn_width">250dp</dimen>
+    <dimen name="neg_margin">-4dp</dimen>
+    <dimen name="imgbtn_height">27dp</dimen>
+    <dimen name="imgbtn_width">27dp</dimen>
+    <dimen name="neg_margin1">-10dp</dimen>
+    <dimen name="splash_text">50sp</dimen>
 </resources>

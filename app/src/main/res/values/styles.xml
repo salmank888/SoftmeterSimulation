@@ -5,13 +5,16 @@
         <!-- Customize your theme here. -->
     </style>
 
-    <style name="DialogAnimation1">
-        <item name="android:windowEnterAnimation">@anim/slide_out_down</item>
-        <item name="android:windowExitAnimation">@anim/slide_in_down</item>
+    <style name="DialogAnimation">
+        <item name="android:windowEnterAnimation">@anim/slide_up_dialog</item>
+        <item name="android:windowExitAnimation">@anim/slide_out_down</item>
     </style>
 
     <!-- Animation for dialog box -->
-    <style name="DialogSlideAnim1" parent="@android:style/Theme.Dialog">
-        <item name="android:windowAnimationStyle">@style/DialogAnimation1</item>
+    <style name="DialogSlideAnim" parent="@android:style/Theme.Dialog">
+        <item name="android:windowAnimationStyle">@style/DialogAnimation</item>
+        <item name="android:windowBackground">@null</item>
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowNoTitle">true</item>
     </style>
 </resources>

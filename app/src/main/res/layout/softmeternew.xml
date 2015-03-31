@@ -114,14 +114,38 @@
 
 
     </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:id="@+id/LL3"
+        android:layout_below="@+id/RA2"
+        android:orientation="horizontal"
+        android:layout_marginTop="@dimen/neg_margin">
+
+        <ImageView
+            android:layout_width="@dimen/imgbtn_width"
+            android:layout_height="@dimen/imgbtn_width"
+            android:id="@+id/add"
+            android:src="@drawable/add"
+            android:layout_marginRight="8dp"/>
+
+        <ImageView
+            android:layout_width="@dimen/imgbtn_width"
+            android:layout_height="@dimen/imgbtn_width"
+            android:id="@+id/sub"
+            android:src="@drawable/subtract"/>
+    </LinearLayout>
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_below="@+id/RA2"
         android:id="@+id/LL1"
-        android:layout_marginTop="5sp"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_below="@+id/LL3"
+        android:layout_marginTop="@dimen/neg_margin1">
 
         <TextView
             android:layout_width="wrap_content"

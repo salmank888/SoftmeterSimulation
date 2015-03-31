@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,6 +54,9 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
     private TextView meterStatus;
     private BootstrapButton meterOnBtn;
     private BootstrapButton timeOffBtn;
+    private ImageView addimage;
+    private ImageView subimage;
+    private RelativeLayout RA2;
     protected ArrayList<LatiLongi> coordinatesList;
 
     double deltaTime = 1.0/6.0; //Seconds
@@ -99,14 +103,20 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
         meterOnBtn = (BootstrapButton) findViewById(R.id.hiredButton);
         timeOffBtn = (BootstrapButton) findViewById(R.id.timeOffButton);
 
-
+        RA2 = (RelativeLayout) findViewById(R.id.RA2);
         meterStatus = (TextView) findViewById(R.id.meterState);
+
+        addimage = (ImageView) findViewById(R.id.add);
+        subimage = (ImageView) findViewById(R.id.sub);
 
         timeOffBtn.setBootstrapButtonEnabled(false);
 
 
         meterOnBtn.setOnClickListener(this);
         timeOffBtn.setOnClickListener(this);
+
+        addimage.setOnClickListener(this);
+        subimage.setOnClickListener(this);
 
 
         gestureDetector = new GestureDetector(ctx, new GestureListener());
@@ -248,6 +258,13 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
                 }
 
                 break;
+            case R.id.add:
+                bookingVal.setText(String.format("%.2f", Float.parseFloat(bookingVal.getText().toString().trim()) + 0.50));
+                break;
+            case R.id.sub:
+                if(Float.parseFloat(bookingVal.getText().toString().trim()) > 0)
+                bookingVal.setText(String.format("%.2f", Float.parseFloat(bookingVal.getText().toString().trim()) - 0.50));
+                break;
             default:
                 break;
         }
@@ -263,13 +280,15 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
 		@Override
 		public boolean onDoubleTapEvent(MotionEvent e) { // perform Double tap on the ImageView
 
-                distanceTimeValue.setVisibility(View.GONE);
+                addimage.setVisibility(View.GONE);
                 meterStatus.setVisibility(View.GONE);
                 meterOnBtn.setVisibility(View.GONE);
                 timeOffBtn.setVisibility(View.GONE);
-                gpsImageVal.setVisibility(View.GONE);
-                gpsVal.setVisibility(View.GONE);
+                subimage.setVisibility(View.GONE);
 
+            RelativeLayout.LayoutParams relativeParams = (RelativeLayout.LayoutParams)RA2.getLayoutParams();
+            relativeParams.setMargins(0, 5, 0, 0);  // left, top, right, bottom
+            RA2.setLayoutParams(relativeParams);
 			return false;
 		}
 
@@ -288,6 +307,12 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
             timeOffBtn.setVisibility(View.VISIBLE);
             gpsImageVal.setVisibility(View.VISIBLE);
             gpsVal.setVisibility(View.VISIBLE);
+            addimage.setVisibility(View.VISIBLE);
+            subimage.setVisibility(View.VISIBLE);
+
+            RelativeLayout.LayoutParams relativeParams = (RelativeLayout.LayoutParams)RA2.getLayoutParams();
+            relativeParams.setMargins(0, 15, 0, 0);  // left, top, right, bottom
+            RA2.setLayoutParams(relativeParams);
 		}
 	}
 	/**

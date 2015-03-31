@@ -10,6 +10,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.util.Patterns;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -18,6 +19,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
 
 @SuppressLint("NewApi")
 public class AlertDialogFragment extends DialogFragment {
@@ -105,11 +107,12 @@ public class AlertDialogFragment extends DialogFragment {
 //			if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.HONEYCOMB_MR2)
 //				dialogBuilder = new Dialog(getActivity()).setView(v).setCancelable(false).create();
 //			else
-				dialogBuilder = new Dialog(getActivity(), android.R.style.Theme_Translucent_NoTitleBar);
+				dialogBuilder = new Dialog(getActivity(), R.style.DialogSlideAnim);
+
             dialogBuilder.setContentView(v);
             dialogBuilder.setCancelable(true);
-            dialogBuilder.getWindow().setLayout(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-
+            dialogBuilder.getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            dialogBuilder.getWindow().setGravity(Gravity.BOTTOM);
             return dialogBuilder;
 		}
 	    
