@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent" android:layout_height="wrap_content"
     xmlns:bootstrap="http://schemas.android.com/apk/res-auto"
-    android:background="@layout/editext_border">
+    android:background="@drawable/editext_border">
 
 
     <RelativeLayout

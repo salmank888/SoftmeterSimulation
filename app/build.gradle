@@ -8,8 +8,8 @@ android {
         applicationId "com.example.skhalid.softmetersimulation"
         minSdkVersion 15
         targetSdkVersion 21
-        versionCode 1
-        versionName "1.0"
+        versionCode 4
+        versionName "1.4"
     }
     buildTypes {
         release {
@@ -25,4 +25,7 @@ dependencies {
     compile 'com.google.android.gms:play-services:6.5.87'
     compile 'com.beardedhen:androidbootstrap:+'
     compile 'com.yalantis:contextmenu:1.0.2'
+    compile 'com.android.support:support-v4:21.0.3'
+
+
 }

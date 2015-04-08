@@ -2,9 +2,16 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:background="@color/soft_blue"
+    android:background="@drawable/dialog_border"
     android:orientation="vertical" >
 
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/soft_blue"
+
+        >
         <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
@@ -18,7 +25,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.9"
-                android:src="@drawable/warning" />
+                android:src="@android:drawable/stat_sys_warning" />
 
     <TextView
         android:id="@+id/dialogTitle"
@@ -34,7 +41,9 @@
     <View
     android:layout_width="fill_parent"
     android:layout_height="1dp"
-    android:background="@color/soft_green"/>
+    android:background="@color/soft_green"
+    android:layout_marginRight="10dp"
+    android:layout_marginLeft="10dp"/>
 
  
 
@@ -45,6 +54,7 @@
         android:layout_marginLeft="20dip"
         android:layout_marginRight="20dip"
         android:layout_weight="0.3"
+        android:textColor="@color/soft_orange"/>
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     
@@ -100,6 +110,6 @@
         android:background="@drawable/button_green"/>
     </LinearLayout>
 
-   
 
+    </LinearLayout>
 </LinearLayout>

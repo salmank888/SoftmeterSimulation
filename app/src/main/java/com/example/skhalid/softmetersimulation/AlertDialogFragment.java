@@ -20,7 +20,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-
 @SuppressLint("NewApi")
 public class AlertDialogFragment extends DialogFragment {
 
@@ -60,8 +59,6 @@ public class AlertDialogFragment extends DialogFragment {
 				 dialogEditText.setVisibility(View.VISIBLE);
 			 Button dialogBtn = (Button) v.findViewById(R.id.dialogBtn1);
 
-			dialogText.setTextColor(Color.WHITE);
-
 			dialogTitle.setText(dialogTitleText);
 			dialogText.setText(dialogBodyText);
 			dialogEditText.setText(dialogBodyEditText);
@@ -85,9 +82,14 @@ public class AlertDialogFragment extends DialogFragment {
 //							Toast.makeText(getActivity(), "Please Enter Valid URL", Toast.LENGTH_LONG).show();
 //						break;
 //
-//					case Constants.ABOUT:
-//						getDialog().dismiss();
-//						break;
+					    case Constants.INFO:
+						    getDialog().dismiss();
+						    break;
+
+                        case Constants.WARNING:
+                            getDialog().dismiss();
+                            getActivity().finish();
+                            break;
 
                         case Constants.GPS:
                             Intent settingActivity = new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
@@ -102,12 +104,8 @@ public class AlertDialogFragment extends DialogFragment {
 				}
 			});
 
-
-			Dialog dialogBuilder;
-//			if (android.os.Build.VERSION.SDK_INT <= android.os.Build.VERSION_CODES.HONEYCOMB_MR2)
-//				dialogBuilder = new Dialog(getActivity()).setView(v).setCancelable(false).create();
-//			else
-				dialogBuilder = new Dialog(getActivity(), R.style.DialogSlideAnim);
+            Dialog dialogBuilder;
+            dialogBuilder = new Dialog(getActivity(), R.style.DialogSlideAnim);
 
             dialogBuilder.setContentView(v);
             dialogBuilder.setCancelable(true);

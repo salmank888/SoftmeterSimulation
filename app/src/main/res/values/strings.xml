@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Softmeter 1.2</string>
+    <string name="app_name">Softmeter</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="location_updated_message">Location Updated with Accuracy: </string>
