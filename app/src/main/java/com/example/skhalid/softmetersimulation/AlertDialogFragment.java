@@ -108,7 +108,7 @@ public class AlertDialogFragment extends DialogFragment {
             dialogBuilder = new Dialog(getActivity(), R.style.DialogSlideAnim);
 
             dialogBuilder.setContentView(v);
-            dialogBuilder.setCancelable(true);
+            dialogBuilder.setCancelable(false);
             dialogBuilder.getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
             dialogBuilder.getWindow().setGravity(Gravity.BOTTOM);
             return dialogBuilder;

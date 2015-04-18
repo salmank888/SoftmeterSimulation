@@ -1,13 +1,14 @@
-<android.support.v4.widget.SwipeRefreshLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/swipeContainer"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    >
+    android:layout_height="fill_parent">
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/soft_blue">
+        android:background="@color/soft_blue"
+        android:id="@+id/scrollView"
+        >
 
 <RelativeLayout
     android:layout_width="match_parent"
@@ -35,7 +36,7 @@
         android:layout_weight="3"
         android:textColor="@color/soft_orange"
         android:visibility="gone"
-         />
+        />
 
     <EditText
         android:id="@+id/apfVal"
@@ -46,7 +47,17 @@
         android:textSize="@dimen/primary_font"
         android:layout_weight="7"
         android:visibility="gone"
-         />
+        />
+    <TextView
+        android:layout_width="0px"
+        android:layout_height="match_parent"
+        android:textSize="@dimen/primary_font"
+        android:text="Please Scroll Down to Get Rates"
+        android:id="@+id/Instruction"
+        android:layout_weight="3"
+        android:textColor="@color/soft_orange"
+        />
+
 </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
@@ -55,6 +66,7 @@
         android:id="@+id/LL21"
         android:layout_below="@+id/LL20"
         android:layout_marginTop="5dp"
+        android:visibility="gone"
         >
 
     <TextView
@@ -88,7 +100,9 @@
         android:layout_height="@dimen/et_height"
         android:id="@+id/LL22"
         android:layout_below="@+id/LL21"
-        android:layout_marginTop="5dp">
+        android:layout_marginTop="5dp"
+        android:visibility="gone"
+        >
     <TextView
         android:layout_width="0px"
         android:layout_height="match_parent"
@@ -239,6 +253,7 @@
         android:layout_marginBottom="10dp"
         >
 
+
         <Button
             android:layout_width="@dimen/btn_width"
             android:layout_height="wrap_content"
@@ -262,6 +277,25 @@
             />
 
     </LinearLayout>
+
+    <com.lsjwzh.widget.materialloadingprogressbar.CircleProgressBar
+        android:id="@+id/progressBar"
+
+        app:mlpb_show_arrow="true"
+        app:mlpb_arrow_height="4dp"
+        app:mlpb_arrow_width="8dp"
+        app:mlpb_enable_circle_background="true"
+
+        app:mlpb_progress_stoke_width="5dp"
+        app:mlpb_progress_text_visibility="invisible"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+
+        android:layout_above="@+id/linearLayout3"
+        android:layout_centerHorizontal="true"
+        android:visibility="gone"
+
+        />
 
     <TextSwitcher
         android:layout_width="wrap_content"

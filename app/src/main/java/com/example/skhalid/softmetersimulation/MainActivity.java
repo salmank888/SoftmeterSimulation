@@ -1,5 +1,6 @@
 package com.example.skhalid.softmetersimulation;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -7,7 +8,9 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.Typeface;
 import android.location.Location;
 import android.location.LocationManager;
@@ -25,6 +28,7 @@ import android.telephony.TelephonyManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -39,12 +43,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
+import com.github.espiandev.showcaseview.ShowcaseView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.lsjwzh.widget.materialloadingprogressbar.CircleProgressBar;
 import com.softmeter.utils.COS;
 import com.softmeter.utils.COSAdapter;
 import com.softmeter.utils.IOMessage;
@@ -64,6 +70,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import static android.graphics.Color.LTGRAY;
 
 public class MainActivity extends ActionBarActivity implements View.OnClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, OnMenuItemClickListener {
 
@@ -137,7 +145,13 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     private static TelephonyManager tm;
     private static WifiManager wifiMan;
     public static COSAdapter cosAdapter;
-    private ProgressDialog pD;
+    private CircleProgressBar cpr;
+    private ShowcaseView sv;
+    private ShowcaseView.ConfigOptions co;
+    private TextView ins;
+
+    Display mdisp;
+    Point mdispSize;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -379,7 +393,20 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         wifiMan = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 
+        cpr = (CircleProgressBar) findViewById(R.id.progressBar);
+
+        co = new ShowcaseView.ConfigOptions();
+
+        ins = (TextView) findViewById(R.id.Instruction);
+         mdisp = getWindowManager().getDefaultDisplay();
+         mdispSize = new Point();
+        mdisp.getSize(mdispSize);
+//        int maxX = mdispSize.x;
+//        int maxY = mdispSize.y;
         runTcpClient();
+
+
+
 
     }
 
@@ -463,8 +490,9 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         Intent lIntent = new Intent(MainActivity.this, FloatingService.class);
         stopService(lIntent);
         try {
+            if(s != null)
             s.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         super.onDestroy();
@@ -636,12 +664,15 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
                 case Constants.MSG_TON:
                     sendMessageToCabDispatch(Constants.MSG_TON, pref.getString("FARE", "0.0") + Constants.COLSEPARATOR + pref.getString("EXTRAS", "0.0") + Constants.COLSEPARATOR + pref.getString("DISTANCE", "0.0") +Constants.COLSEPARATOR + pref.getString("TIME", "0.0"));
+                    break;
 
                 case Constants.MSG_MOFF:
                     sendMessageToCabDispatch(Constants.MSG_MOFF, pref.getString("FARE", "0.0") + Constants.COLSEPARATOR + pref.getString("EXTRAS", "0.0") + Constants.COLSEPARATOR + pref.getString("DISTANCE", "0.0") +Constants.COLSEPARATOR + pref.getString("TIME", "0.0"));
+                    break;
 
                 case Constants.MSG_TOFF:
                       sendMessageToCabDispatch(Constants.MSG_TOFF, pref.getString("FARE", "0.0") + Constants.COLSEPARATOR + pref.getString("EXTRAS", "0.0") + Constants.COLSEPARATOR + pref.getString("DISTANCE", "0.0") +Constants.COLSEPARATOR + pref.getString("TIME", "0.0"));
+                    break;
 
                 case Constants.MSG_MON:
                       sendMessageToCabDispatch(Constants.MSG_MON, String.valueOf(msg.arg1));
@@ -651,9 +682,6 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                     break;
 
             }
-//            String str = (String)msg.obj;
-//            Toast.makeText(getApplicationContext(),
-//                    "From Service -> " + str, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -698,8 +726,12 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
     private void runTcpClient() {
 
-        pD = ProgressDialog.show(MainActivity.this, "", "Loading...");
-        pD.setCancelable(false);
+        cpr.setVisibility(View.VISIBLE);
+        cpr.setColorSchemeResources(android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light);
+
 
         new Thread(new Runnable() {
             public boolean socketStatus;
@@ -732,15 +764,19 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 } finally {
                     if(socketStatus)
                         tcpReceiverThread.start();
+
                         else {
                         forceCloseDialog = AlertDialogFragment.newInstance("Warning", "", "Please Login Dispatch App First.\nThen Try Again", "OK", Constants.WARNING);
+                        forceCloseDialog.setCancelable(false);
                         forceCloseDialog.show(getSupportFragmentManager(), "dialog");
                     }
 
                     new Handler(getMainLooper()).post(new Runnable() {
                         @Override
                         public void run() {
-                        pD.cancel();
+                        cpr.setVisibility(View.GONE);
+                            showShowcase();
+
                         }
                     });
                 }
@@ -889,7 +925,29 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                                     break;
                                 case Constants.MSG_QTD_RCV:
                                         for (COS cos : cosAdapter.values()){
-                                            if(cos.get_ClassOfServiceID().equalsIgnoreCase(msgRcvd.getBody())){
+                                            if(msgRcvd.getBody().equalsIgnoreCase("-1")){
+                                                if(Boolean.valueOf(cos.get_DefaultClassOfService())) {
+                                                    ambPickupFee = Double.parseDouble(cos.get_APF());
+                                                    puMiles = Double.parseDouble(cos.get_PUM());
+                                                    puTime = Double.parseDouble(cos.get_PUT());
+
+                                                    additionalDistanceUnit = Double.parseDouble(cos.get_ADU());
+                                                    additionalDistanceUnitCost = Double.parseDouble(cos.get_ADC());
+
+                                                    additionalTimeUnit = Double.parseDouble(cos.get_ATU());
+                                                    additionalTimeUnitCost = Double.parseDouble(cos.get_ATC());
+//                                                    new Handler(getMainLooper()).post(new Runnable() {
+//                                                        @Override
+//                                                        public void run() {
+//                                                            sendMessage(Constants.MSG_MON_RSP);
+//                                                            sendMessageToCabDispatch(Constants.MSG_RTD, pref.getString("FARE", "0.0") + Constants.COLSEPARATOR + pref.getString("EXTRAS", "0.0") + Constants.COLSEPARATOR + pref.getString("DISTANCE", "0.0") + Constants.COLSEPARATOR + pref.getString("TIME", "0.0"));
+//                                                        }
+//                                                    });
+
+                                                    break;
+                                                }
+                                            }
+                                            else if(cos.get_ClassOfServiceID().equalsIgnoreCase(msgRcvd.getBody())){
                                                 ambPickupFee = Double.parseDouble(cos.get_APF());
                                                 puMiles = Double.parseDouble(cos.get_PUM());
                                                 puTime = Double.parseDouble(cos.get_PUT());
@@ -899,17 +957,18 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
                                                 additionalTimeUnit = Double.parseDouble(cos.get_ATU());
                                                 additionalTimeUnitCost = Double.parseDouble(cos.get_ATC());
-                                                new Handler(getMainLooper()).post(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        sendMessage(Constants.MSG_MON_RSP);
-                                                        sendMessageToCabDispatch(Constants.MSG_RTD, pref.getString("FARE", "0.0") + Constants.COLSEPARATOR + pref.getString("EXTRAS", "0.0") + Constants.COLSEPARATOR + pref.getString("DISTANCE", "0.0") +Constants.COLSEPARATOR + pref.getString("TIME", "0.0"));
-                                                    }
-                                                });
+
 
                                                 break;
                                             }
                                         }
+                                    new Handler(getMainLooper()).post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            sendMessage(Constants.MSG_MON_RSP);
+                                            sendMessageToCabDispatch(Constants.MSG_RTD, pref.getString("FARE", "0.0") + Constants.COLSEPARATOR + pref.getString("EXTRAS", "0.0") + Constants.COLSEPARATOR + pref.getString("DISTANCE", "0.0") +Constants.COLSEPARATOR + pref.getString("TIME", "0.0"));
+                                        }
+                                    });
                                     break;
                                 default:
                                     break;
@@ -923,4 +982,24 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
             }
         }
     });
+
+
+    public void showShowcase() {
+        // TODO Auto-generated method stub
+        try{
+            co.hideOnClickOutside = false;
+            co.showcaseId = 1;
+            sv = ShowcaseView.insertShowcaseView(ins, MainActivity.this, "", "", co);
+            sv.setTextColors(getResources().getColor(R.color.soft_orange), getResources().getColor(R.color.soft_orange));
+            sv.setShowcasePosition(0, 0);
+            sv.setAlpha(0.5f);
+            sv.animateGesture(mdispSize.x/2, 200, mdispSize.x/2, 750).start();
+
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+
+
+    }
 }
