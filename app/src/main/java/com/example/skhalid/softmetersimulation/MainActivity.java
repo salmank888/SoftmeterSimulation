@@ -51,6 +51,8 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.lsjwzh.widget.materialloadingprogressbar.CircleProgressBar;
+import com.nineoldandroids.animation.Animator;
+import com.nineoldandroids.animation.AnimatorSet;
 import com.softmeter.utils.COS;
 import com.softmeter.utils.COSAdapter;
 import com.softmeter.utils.IOMessage;
@@ -70,6 +72,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static android.graphics.Color.LTGRAY;
 
@@ -88,6 +94,8 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
     private Button startBtn;
     private Button stopBtn;
+    private Button connectBtn;
+
 
     protected TextSwitcher addressVal;
     public static double ambPickupFee = 4.00; //APF
@@ -149,9 +157,17 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     private ShowcaseView sv;
     private ShowcaseView.ConfigOptions co;
     private TextView ins;
+    public static boolean isConnectedWithDriverApp = false;
 
-    Display mdisp;
-    Point mdispSize;
+    private Display mdisp;
+    private Point mdispSize;
+    private AnimatorSet showcaseGesture;
+    private ScheduledExecutorService scheduler;
+    private Runnable connectionAliveRunnable;
+    private TcpReceiverThread tcpReceiverThread;
+    private Future<?> futureTask;
+    private Intent floatingServiceOnDestroyIntent;
+    private Intent addressServiceIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -347,11 +363,13 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
         startBtn = (Button) findViewById(R.id.startButton);
         stopBtn = (Button) findViewById(R.id.stopButton);
+        connectBtn = (Button) findViewById(R.id.connectButton);
 
         stopBtn.setEnabled(false);
 
         startBtn.setOnClickListener(this);
         stopBtn.setOnClickListener(this);
+        connectBtn.setOnClickListener(this);
 
         mRequestingLocationUpdates = true;
 
@@ -403,6 +421,22 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         mdisp.getSize(mdispSize);
 //        int maxX = mdispSize.x;
 //        int maxY = mdispSize.y;
+         scheduler = Executors.newSingleThreadScheduledExecutor();
+
+        connectionAliveRunnable = new Runnable() {
+
+            @Override
+            public void run(){
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        sendMessageToCabDispatch(Constants.MSG_CONNECTION_ALIVE, "");
+                    }
+                });
+            }
+        };
+
+
         runTcpClient();
 
 
@@ -441,7 +475,20 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 stopBtn.setEnabled(false);
                 startBtn.setEnabled(true);
                 sendMessage(Constants.MSG_SOFTMETER_POWER_OFF);
+                break;
 
+            case R.id.connectButton:
+                try {
+                    if(!futureTask.isCancelled())
+                    futureTask.cancel(true);
+                    if(tcpReceiverThread != null)
+                        tcpReceiverThread.interrupt();
+                    if(s != null)
+                        s.close();
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_LONG).show();
+                }
+                runTcpClient();
                 break;
 
             default:
@@ -485,11 +532,17 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     protected void onDestroy() {
         unbindService(mCon);
         mGoogleApiClient.disconnect();
-        Intent intent = new Intent(this, FetchAddressIntentService.class);
-        stopService(intent);
-        Intent lIntent = new Intent(MainActivity.this, FloatingService.class);
-        stopService(lIntent);
+        addressServiceIntent = new Intent(this, FetchAddressIntentService.class);
+        stopService(addressServiceIntent);
+        floatingServiceOnDestroyIntent = new Intent(MainActivity.this, FloatingService.class);
+        stopService(floatingServiceOnDestroyIntent);
+        if(sv != null)
+        sv.clearAnimation();
+        if(scheduler != null)
+            scheduler.shutdownNow();
         try {
+            if(tcpReceiverThread != null)
+            tcpReceiverThread.interrupt();
             if(s != null)
             s.close();
         } catch (Exception e) {
@@ -762,8 +815,11 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 } catch (Exception e) {
                     socketStatus = false;
                 } finally {
-                    if(socketStatus)
+                    if(socketStatus) {
+                        tcpReceiverThread = new TcpReceiverThread();
                         tcpReceiverThread.start();
+                        futureTask = scheduler.scheduleWithFixedDelay(connectionAliveRunnable, 2, 5, TimeUnit.SECONDS);
+                    }
 
                         else {
                         forceCloseDialog = AlertDialogFragment.newInstance("Warning", "", "Please Login Dispatch App First.\nThen Try Again", "OK", Constants.WARNING);
@@ -775,6 +831,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                         @Override
                         public void run() {
                         cpr.setVisibility(View.GONE);
+                            if(sv == null)
                             showShowcase();
 
                         }
@@ -869,10 +926,16 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
             out.flush();
 
             Log.i("TcpClient", "sent: " + outMsg);
+            isConnectedWithDriverApp = true;
+            connectBtn.setVisibility(View.INVISIBLE);
+
             //accept server response
 //            String inMsg = in.readLine() + System.getProperty("line.separator");
 //            Log.i("TcpClient", "received: " + inMsg);
         } catch (Exception e) {
+            isConnectedWithDriverApp = false;
+            futureTask.cancel(true);
+            connectBtn.setVisibility(View.VISIBLE);
             e.printStackTrace();
         }
     }
@@ -900,42 +963,41 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         return deviceID;
     }
 
-    Thread tcpReceiverThread = new Thread(new Runnable() {
+    public class TcpReceiverThread extends Thread{
         @Override
         public void run() {
 
-            while (!Thread.interrupted()){
-
-                //accept server response
-                String inMsg = null;
-                try {
-                    in = new BufferedReader(new InputStreamReader(s.getInputStream()));
-                    inMsg = in.readLine() + System.getProperty("line.separator");
+            //accept server response
+            String inMsg = null;
+            try {
+                in = new BufferedReader(new InputStreamReader(s.getInputStream()));
+                inMsg = in.readLine() + System.getProperty("line.separator");
+                if (!inMsg.contains("null")){
                     IOMessage msgRcvd = new IOMessage(inMsg);
-                        if(msgRcvd != null){
-                            switch (msgRcvd.getType()) {
-                                case Constants.MSG_CF_RCV:
-                                    cosAdapter = new COSAdapter(msgRcvd.getBody());
-                                 new Handler(getMainLooper()).postDelayed(new Runnable() {
+                    if (msgRcvd != null) {
+                        switch (msgRcvd.getType()) {
+                            case Constants.MSG_CF_RCV:
+                                cosAdapter = new COSAdapter(msgRcvd.getBody());
+                                new Handler(getMainLooper()).postDelayed(new Runnable() {
                                     @Override
                                     public void run() {
-                                    swipeContainer.setRefreshing(false);
-                                           }
-                                        }, 2000);
-                                    break;
-                                case Constants.MSG_QTD_RCV:
-                                        for (COS cos : cosAdapter.values()){
-                                            if(msgRcvd.getBody().equalsIgnoreCase("-1")){
-                                                if(Boolean.valueOf(cos.get_DefaultClassOfService())) {
-                                                    ambPickupFee = Double.parseDouble(cos.get_APF());
-                                                    puMiles = Double.parseDouble(cos.get_PUM());
-                                                    puTime = Double.parseDouble(cos.get_PUT());
+                                        swipeContainer.setRefreshing(false);
+                                    }
+                                }, 2000);
+                                break;
+                            case Constants.MSG_QTD_RCV:
+                                for (COS cos : cosAdapter.values()) {
+                                    if (msgRcvd.getBody().equalsIgnoreCase("-1")) {
+                                        if (Boolean.valueOf(cos.get_DefaultClassOfService())) {
+                                            ambPickupFee = Double.parseDouble(cos.get_APF());
+                                            puMiles = Double.parseDouble(cos.get_PUM());
+                                            puTime = Double.parseDouble(cos.get_PUT());
 
-                                                    additionalDistanceUnit = Double.parseDouble(cos.get_ADU());
-                                                    additionalDistanceUnitCost = Double.parseDouble(cos.get_ADC());
+                                            additionalDistanceUnit = Double.parseDouble(cos.get_ADU());
+                                            additionalDistanceUnitCost = Double.parseDouble(cos.get_ADC());
 
-                                                    additionalTimeUnit = Double.parseDouble(cos.get_ATU());
-                                                    additionalTimeUnitCost = Double.parseDouble(cos.get_ATC());
+                                            additionalTimeUnit = Double.parseDouble(cos.get_ATU());
+                                            additionalTimeUnitCost = Double.parseDouble(cos.get_ATC());
 //                                                    new Handler(getMainLooper()).post(new Runnable() {
 //                                                        @Override
 //                                                        public void run() {
@@ -944,44 +1006,124 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 //                                                        }
 //                                                    });
 
-                                                    break;
-                                                }
-                                            }
-                                            else if(cos.get_ClassOfServiceID().equalsIgnoreCase(msgRcvd.getBody())){
-                                                ambPickupFee = Double.parseDouble(cos.get_APF());
-                                                puMiles = Double.parseDouble(cos.get_PUM());
-                                                puTime = Double.parseDouble(cos.get_PUT());
-
-                                                additionalDistanceUnit = Double.parseDouble(cos.get_ADU());
-                                                additionalDistanceUnitCost = Double.parseDouble(cos.get_ADC());
-
-                                                additionalTimeUnit = Double.parseDouble(cos.get_ATU());
-                                                additionalTimeUnitCost = Double.parseDouble(cos.get_ATC());
-
-
-                                                break;
-                                            }
+                                            break;
                                         }
-                                    new Handler(getMainLooper()).post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            sendMessage(Constants.MSG_MON_RSP);
-                                            sendMessageToCabDispatch(Constants.MSG_RTD, pref.getString("FARE", "0.0") + Constants.COLSEPARATOR + pref.getString("EXTRAS", "0.0") + Constants.COLSEPARATOR + pref.getString("DISTANCE", "0.0") +Constants.COLSEPARATOR + pref.getString("TIME", "0.0"));
-                                        }
-                                    });
-                                    break;
-                                default:
-                                    break;
-                            }
+                                    } else if (cos.get_ClassOfServiceID().equalsIgnoreCase(msgRcvd.getBody())) {
+                                        ambPickupFee = Double.parseDouble(cos.get_APF());
+                                        puMiles = Double.parseDouble(cos.get_PUM());
+                                        puTime = Double.parseDouble(cos.get_PUT());
+
+                                        additionalDistanceUnit = Double.parseDouble(cos.get_ADU());
+                                        additionalDistanceUnitCost = Double.parseDouble(cos.get_ADC());
+
+                                        additionalTimeUnit = Double.parseDouble(cos.get_ATU());
+                                        additionalTimeUnitCost = Double.parseDouble(cos.get_ATC());
+
+
+                                        break;
+                                    }
+                                }
+                                new Handler(getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        sendMessage(Constants.MSG_MON_RSP);
+                                        sendMessageToCabDispatch(Constants.MSG_RTD, pref.getString("FARE", "0.0") + Constants.COLSEPARATOR + pref.getString("EXTRAS", "0.0") + Constants.COLSEPARATOR + pref.getString("DISTANCE", "0.0") + Constants.COLSEPARATOR + pref.getString("TIME", "0.0"));
+                                    }
+                                });
+                                break;
+                            default:
+                                break;
                         }
-
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    }
                 }
-                Log.i("TcpClient", "received: " + inMsg);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+            Log.i("TcpClient", "received: " + inMsg);
         }
-    });
+    }
+//    Thread tcpReceiverThread = new Thread(new Runnable() {
+//        @Override
+//        public void run() {
+//
+//            while (!Thread.interrupted()){
+//
+//                //accept server response
+//                String inMsg = null;
+//                try {
+//                    in = new BufferedReader(new InputStreamReader(s.getInputStream()));
+//                    inMsg = in.readLine() + System.getProperty("line.separator");
+//                    if (!inMsg.contains("null")){
+//                        IOMessage msgRcvd = new IOMessage(inMsg);
+//                    if (msgRcvd != null) {
+//                        switch (msgRcvd.getType()) {
+//                            case Constants.MSG_CF_RCV:
+//                                cosAdapter = new COSAdapter(msgRcvd.getBody());
+//                                new Handler(getMainLooper()).postDelayed(new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//                                        swipeContainer.setRefreshing(false);
+//                                    }
+//                                }, 2000);
+//                                break;
+//                            case Constants.MSG_QTD_RCV:
+//                                for (COS cos : cosAdapter.values()) {
+//                                    if (msgRcvd.getBody().equalsIgnoreCase("-1")) {
+//                                        if (Boolean.valueOf(cos.get_DefaultClassOfService())) {
+//                                            ambPickupFee = Double.parseDouble(cos.get_APF());
+//                                            puMiles = Double.parseDouble(cos.get_PUM());
+//                                            puTime = Double.parseDouble(cos.get_PUT());
+//
+//                                            additionalDistanceUnit = Double.parseDouble(cos.get_ADU());
+//                                            additionalDistanceUnitCost = Double.parseDouble(cos.get_ADC());
+//
+//                                            additionalTimeUnit = Double.parseDouble(cos.get_ATU());
+//                                            additionalTimeUnitCost = Double.parseDouble(cos.get_ATC());
+////                                                    new Handler(getMainLooper()).post(new Runnable() {
+////                                                        @Override
+////                                                        public void run() {
+////                                                            sendMessage(Constants.MSG_MON_RSP);
+////                                                            sendMessageToCabDispatch(Constants.MSG_RTD, pref.getString("FARE", "0.0") + Constants.COLSEPARATOR + pref.getString("EXTRAS", "0.0") + Constants.COLSEPARATOR + pref.getString("DISTANCE", "0.0") + Constants.COLSEPARATOR + pref.getString("TIME", "0.0"));
+////                                                        }
+////                                                    });
+//
+//                                            break;
+//                                        }
+//                                    } else if (cos.get_ClassOfServiceID().equalsIgnoreCase(msgRcvd.getBody())) {
+//                                        ambPickupFee = Double.parseDouble(cos.get_APF());
+//                                        puMiles = Double.parseDouble(cos.get_PUM());
+//                                        puTime = Double.parseDouble(cos.get_PUT());
+//
+//                                        additionalDistanceUnit = Double.parseDouble(cos.get_ADU());
+//                                        additionalDistanceUnitCost = Double.parseDouble(cos.get_ADC());
+//
+//                                        additionalTimeUnit = Double.parseDouble(cos.get_ATU());
+//                                        additionalTimeUnitCost = Double.parseDouble(cos.get_ATC());
+//
+//
+//                                        break;
+//                                    }
+//                                }
+//                                new Handler(getMainLooper()).post(new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//                                        sendMessage(Constants.MSG_MON_RSP);
+//                                        sendMessageToCabDispatch(Constants.MSG_RTD, pref.getString("FARE", "0.0") + Constants.COLSEPARATOR + pref.getString("EXTRAS", "0.0") + Constants.COLSEPARATOR + pref.getString("DISTANCE", "0.0") + Constants.COLSEPARATOR + pref.getString("TIME", "0.0"));
+//                                    }
+//                                });
+//                                break;
+//                            default:
+//                                break;
+//                        }
+//                    }
+//                }
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//                Log.i("TcpClient", "received: " + inMsg);
+//            }
+//        }
+//    });
 
 
     public void showShowcase() {
@@ -992,8 +1134,32 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
             sv = ShowcaseView.insertShowcaseView(ins, MainActivity.this, "", "", co);
             sv.setTextColors(getResources().getColor(R.color.soft_orange), getResources().getColor(R.color.soft_orange));
             sv.setShowcasePosition(0, 0);
-            sv.setAlpha(0.5f);
-            sv.animateGesture(mdispSize.x/2, 200, mdispSize.x/2, 750).start();
+            sv.setAlpha(0.7f);
+            showcaseGesture = sv.animateGesture(mdispSize.x/2, 200, mdispSize.x/2, 750);
+            showcaseGesture.addListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    if(!sv.isPressed())
+                    showcaseGesture.start();
+
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {
+
+                }
+            });
+            showcaseGesture.start();
 
         }
         catch(Exception e){
@@ -1002,4 +1168,5 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
 
     }
+
 }

@@ -38,7 +38,8 @@ public class FloatingService extends Service {
     @Override
 	public void onDestroy() {
 		super.onDestroy();
-//		floatingImage.destroy(); //  now its an efficient way to destroy the imageView
+        if(floatingImage != null)
+		floatingImage.destroy(); //  now its an efficient way to destroy the imageView
 	}
 
     private class IncomingHandler extends Handler {
@@ -89,4 +90,6 @@ public class FloatingService extends Service {
                 e.printStackTrace();
             }
     }
+
+
 }

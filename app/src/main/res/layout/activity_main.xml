@@ -25,36 +25,33 @@
     android:minHeight="@dimen/et_height"
     android:id="@+id/LL20"
     android:layout_marginTop="50dp"
+    android:gravity="center_horizontal"
     >
 
     <TextView
-        android:layout_width="0px"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:textSize="@dimen/primary_font"
         android:text="APF($): "
         android:id="@+id/apfLbl"
-        android:layout_weight="3"
         android:textColor="@color/soft_orange"
         android:visibility="gone"
         />
 
     <EditText
         android:id="@+id/apfVal"
-        android:layout_width="0px"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:inputType="numberDecimal"
         android:ems="10"
         android:textSize="@dimen/primary_font"
-        android:layout_weight="7"
         android:visibility="gone"
         />
     <TextView
-        android:layout_width="0px"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:textSize="@dimen/primary_font"
-        android:text="Please Scroll Down to Get Rates"
+        android:text="Pull Down to Get Rates"
         android:id="@+id/Instruction"
-        android:layout_weight="3"
         android:textColor="@color/soft_orange"
         />
 
@@ -274,6 +271,18 @@
             android:layout_gravity="center_horizontal"
             android:background="@drawable/button_green"
             android:textColor="@drawable/buttoncolor"
+            />
+
+        <Button
+            android:layout_width="@dimen/btn_width"
+            android:layout_height="wrap_content"
+            android:text="Connect"
+            android:id="@+id/connectButton"
+            android:layout_marginTop="5dp"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/button_green"
+            android:textColor="@drawable/buttoncolor"
+            android:visibility="invisible"
             />
 
     </LinearLayout>

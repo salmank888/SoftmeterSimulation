@@ -45,6 +45,8 @@ public final class Constants {
 
     public static final int MSG_TON = 18888;  // TON - Time On
 
+    public static final int MSG_CONNECTION_ALIVE = 10000;  // CONNECTION_ALIVE
+
 
 
     public static final char EOT = (char) 0x4;

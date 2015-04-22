@@ -113,8 +113,5 @@ public class AlertDialogFragment extends DialogFragment {
             dialogBuilder.getWindow().setGravity(Gravity.BOTTOM);
             return dialogBuilder;
 		}
-	    
-	    
-
 
 }

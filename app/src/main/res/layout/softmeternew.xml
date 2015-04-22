@@ -25,7 +25,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="GPS"
+            android:text=""
             android:id="@+id/gpsValue"
             android:textSize="20sp"
             android:layout_alignParentRight="true"
@@ -37,7 +37,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/gpsImage"
             android:layout_toLeftOf="@+id/gpsValue"
-            android:src="@drawable/gps_green"/>
+            android:src="@drawable/connected"/>
 
 
     </RelativeLayout>
