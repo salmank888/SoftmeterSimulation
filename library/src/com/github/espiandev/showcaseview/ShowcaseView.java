@@ -457,13 +457,13 @@ public class ShowcaseView extends RelativeLayout implements View.OnClickListener
 		ObjectAnimator setUpX = ObjectAnimator.ofFloat(mHandy, "x", showcaseX + offsetStartX).setDuration(0);
 		ObjectAnimator setUpY = ObjectAnimator.ofFloat(mHandy, "y", showcaseY + offsetStartY).setDuration(0);
 
-		ObjectAnimator moveX = ObjectAnimator.ofFloat(mHandy, "x", showcaseX + offsetEndX).setDuration(5000);
-		ObjectAnimator moveY = ObjectAnimator.ofFloat(mHandy, "y", showcaseY + offsetEndY).setDuration(5000);
+		ObjectAnimator moveX = ObjectAnimator.ofFloat(mHandy, "x", showcaseX + offsetEndX).setDuration(3000);
+		ObjectAnimator moveY = ObjectAnimator.ofFloat(mHandy, "y", showcaseY + offsetEndY).setDuration(3000);
 		moveX.setStartDelay(1000);
 		moveY.setStartDelay(1000);
 
 		ObjectAnimator alphaOut = ObjectAnimator.ofFloat(mHandy, "alpha", 0f).setDuration(500);
-		alphaOut.setStartDelay(7500);
+		alphaOut.setStartDelay(4500);
 
 		AnimatorSet as = new AnimatorSet();
 		as.play(setUpX).with(setUpY).before(alphaIn).before(moveX).with(moveY).before(alphaOut);

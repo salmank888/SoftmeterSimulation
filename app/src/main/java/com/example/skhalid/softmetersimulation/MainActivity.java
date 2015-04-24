@@ -1,6 +1,7 @@
 package com.example.skhalid.softmetersimulation;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -534,10 +535,14 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         mGoogleApiClient.disconnect();
         addressServiceIntent = new Intent(this, FetchAddressIntentService.class);
         stopService(addressServiceIntent);
-        floatingServiceOnDestroyIntent = new Intent(MainActivity.this, FloatingService.class);
-        stopService(floatingServiceOnDestroyIntent);
+
+            floatingServiceOnDestroyIntent = new Intent(MainActivity.this, FloatingService.class);
+            stopService(floatingServiceOnDestroyIntent);
+
         if(sv != null)
         sv.clearAnimation();
+        if(!futureTask.isCancelled())
+            futureTask.cancel(true);
         if(scheduler != null)
             scheduler.shutdownNow();
         try {
@@ -548,7 +553,9 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         super.onDestroy();
+
     }
 
     protected synchronized void buildGoogleApiClient() {
@@ -934,7 +941,9 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 //            Log.i("TcpClient", "received: " + inMsg);
         } catch (Exception e) {
             isConnectedWithDriverApp = false;
+            if(!futureTask.isCancelled())
             futureTask.cancel(true);
+            if(connectBtn != null)
             connectBtn.setVisibility(View.VISIBLE);
             e.printStackTrace();
         }
@@ -967,12 +976,14 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         @Override
         public void run() {
 
+          while (!Thread.interrupted()){
+
             //accept server response
             String inMsg = null;
             try {
                 in = new BufferedReader(new InputStreamReader(s.getInputStream()));
                 inMsg = in.readLine() + System.getProperty("line.separator");
-                if (!inMsg.contains("null")){
+                if (!inMsg.contains("null")) {
                     IOMessage msgRcvd = new IOMessage(inMsg);
                     if (msgRcvd != null) {
                         switch (msgRcvd.getType()) {
@@ -1040,6 +1051,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 e.printStackTrace();
             }
             Log.i("TcpClient", "received: " + inMsg);
+        }
         }
     }
 //    Thread tcpReceiverThread = new Thread(new Runnable() {
@@ -1168,5 +1180,4 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
 
     }
-
 }

@@ -54,6 +54,7 @@ public class FloatingService extends Service {
 
                 case Constants.MSG_SOFTMETER_POWER_OFF:
                     floatingImage.destroy();
+                    floatingImage = null;
                     break;
 
                 case Constants.MSG_MON_RSP:
