@@ -57,6 +57,9 @@ service, even when using an explicit intent.
 
 
 
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="e922193242319222a50b17d8545c3927f484c2bb" />
     </application>
 
 </manifest>

@@ -44,6 +44,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
+import com.crashlytics.android.Crashlytics;
 import com.github.espiandev.showcaseview.ShowcaseView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -213,6 +214,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
             versionName = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
         } catch (PackageManager.NameNotFoundException e) {
             Toast.makeText(MainActivity.this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+            Crashlytics.logException(e);
         }
 
         mMenuDialogFragment = ContextMenuDialogFragment.newInstance((int) getResources().getDimension(R.dimen.tool_bar_height), getMenuObjects());
@@ -488,6 +490,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                         s.close();
                 } catch (Exception e) {
                     Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_LONG).show();
+                    Crashlytics.logException(e);
                 }
                 runTcpClient();
                 break;
@@ -552,6 +555,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
             s.close();
         } catch (Exception e) {
             e.printStackTrace();
+            Crashlytics.logException(e);
         }
 
         super.onDestroy();
@@ -763,6 +767,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         try {
             mServiceMessenger.send(message);
         } catch (Exception e) {
+            Crashlytics.logException(e);
 //			FragmentTabsPager fTP = new FragmentTabsPager();
 //			fTP.handleException("sendMessage: " + e.getLocalizedMessage());
         }
@@ -821,6 +826,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
                 } catch (Exception e) {
                     socketStatus = false;
+                    Crashlytics.logException(e);
                 } finally {
                     if(socketStatus) {
                         tcpReceiverThread = new TcpReceiverThread();
@@ -946,6 +952,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
             if(connectBtn != null)
             connectBtn.setVisibility(View.VISIBLE);
             e.printStackTrace();
+            Crashlytics.logException(e);
         }
     }
 
@@ -968,6 +975,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 Toast.makeText(MainActivity.this, ex.toString(), Toast.LENGTH_LONG);
                 deviceID = "000000000000000";
             }
+            Crashlytics.logException(e);
         }
         return deviceID;
     }
@@ -1049,6 +1057,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+                Crashlytics.logException(e);
             }
             Log.i("TcpClient", "received: " + inMsg);
         }
@@ -1176,6 +1185,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         }
         catch(Exception e){
             e.printStackTrace();
+            Crashlytics.logException(e);
         }
 
 

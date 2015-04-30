@@ -23,6 +23,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.beardedhen.androidbootstrap.BootstrapButton;
+import com.crashlytics.android.Crashlytics;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -262,6 +263,7 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
                                 fOut.close();
                             } catch (IOException e) {
                                 e.printStackTrace();
+                                Crashlytics.logException(e);
                             }
                         } else
                             Toast.makeText(ctx, "Please Stop First", Toast.LENGTH_LONG).show();
@@ -406,6 +408,7 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
         }
         catch (IOException e) {
             Toast.makeText(ctx, e.toString(), Toast.LENGTH_LONG).show();
+            Crashlytics.logException(e);
         }
     }
 
@@ -424,6 +427,7 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
 
         } catch (Exception e) {
             e.printStackTrace();
+            Crashlytics.logException(e);
         }
     }
 
@@ -436,7 +440,7 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
             }
         } catch (Exception e) {
             e.printStackTrace();
-
+            Crashlytics.logException(e);
             return false;
         }
     }
@@ -588,6 +592,7 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
                                 } catch (IOException e) {
                                     // TODO Auto-generated catch block
                                     e.printStackTrace();
+                                    Crashlytics.logException(e);
                                 }
 
 

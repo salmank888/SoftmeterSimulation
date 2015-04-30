@@ -8,6 +8,8 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 
+import com.crashlytics.android.Crashlytics;
+
 public class FloatingService extends Service {
     private FloatingImage floatingImage;
     private Messenger mServiceMessenger;
@@ -89,6 +91,7 @@ public class FloatingService extends Service {
                 mActivityMessenger.send(lMsg);
             } catch (RemoteException e) {
                 e.printStackTrace();
+                Crashlytics.logException(e);
             }
     }
 
