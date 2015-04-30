@@ -22,7 +22,7 @@ public class TcpClientService extends Service {
 	@Override
 	public void onCreate() {
 		runTcpClient();
-		this.stopSelf();
+//		this.stopSelf();
 	}
 	private static final int TCP_SERVER_PORT = 21111;
 	private void runTcpClient() {

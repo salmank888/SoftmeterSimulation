@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <dimen name="label_font_2">12sp</dimen>
     <dimen name="label_font">22sp</dimen>
     <dimen name="value_font">32sp</dimen>
 

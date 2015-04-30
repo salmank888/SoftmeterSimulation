@@ -1,11 +1,14 @@
 package com.example.skhalid.softmetersimulation;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.graphics.Typeface;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Message;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.Gravity;
@@ -15,7 +18,6 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.WindowManager;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,7 +38,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class FloatingImage extends RelativeLayout implements OnTouchListener, View.OnClickListener {
-	WindowManager windowManager; // to hold our image on screen
+    private Handler connectionStatusHandler;
+    private ScheduledExecutorService connectionStatusScheduler;
+    WindowManager windowManager; // to hold our image on screen
 	Context ctx; // context so in case i use it somewhere.
 	GestureDetector gestureDetector; // to detect some listener on the image.
 	WindowManager.LayoutParams params; // layoutParams where i set the image height/width and other.
@@ -48,9 +52,9 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
 	private LayoutInflater mInflater;
     private TextView distanceTimeValue;
     private TextView gpsVal;
-    private ImageView gpsImageVal;
+    private ImageView connectionStatusVal;
     private TextView fareVal;
-    private TextView bookingVal;
+    private TextView extrasVal;
     private TextView meterStatus;
     private BootstrapButton meterOnBtn;
     private BootstrapButton timeOffBtn;
@@ -94,11 +98,11 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
 		 Typeface tf = Typeface.createFromAsset(context.getAssets(), "digital-7.ttf");
          distanceTimeValue = (TextView) findViewById(R.id.distTimeValue);
          gpsVal = (TextView) findViewById(R.id.gpsValue);
-         gpsImageVal = (ImageView) findViewById(R.id.gpsImage);
+         connectionStatusVal = (ImageView) findViewById(R.id.gpsImage);
 		 fareVal = (TextView) findViewById(R.id.fareValue);
-		 bookingVal = (TextView) findViewById(R.id.extrasValue);
+		 extrasVal = (TextView) findViewById(R.id.extrasValue);
 	     fareVal.setTypeface(tf);
-	     bookingVal.setTypeface(tf);
+	     extrasVal.setTypeface(tf);
 
         meterOnBtn = (BootstrapButton) findViewById(R.id.hiredButton);
         timeOffBtn = (BootstrapButton) findViewById(R.id.timeOffButton);
@@ -139,6 +143,26 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
 
         coordinatesList = new ArrayList<LatiLongi>();
         mainHandler = new Handler(context.getMainLooper());
+        connectionStatusHandler = new Handler(context.getMainLooper());
+        connectionStatusScheduler = Executors.newScheduledThreadPool(1);
+
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                connectionStatusHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(MainActivity.isConnectedWithDriverApp)
+                            connectionStatusVal.setImageDrawable(getResources().getDrawable(R.drawable.connected));
+                        else
+                            connectionStatusVal.setImageDrawable(getResources().getDrawable(R.drawable.notconnected));
+                    }
+                });
+
+            }
+        };
+
+        connectionStatusScheduler.scheduleAtFixedRate(r, 5, 2, TimeUnit.SECONDS);
 
     }
 
@@ -193,77 +217,97 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.hiredButton:
-                if (meterStatus.getText().toString().trim().equalsIgnoreCase("For Hire")){
-                    if(K == 0) {
-//                        readTextFile();
-                        openTxtFileforWriting();
-                        FloatingService.sendMessageToLauncherActivity(Constants.MSG_DISABLE_FIELDS);
+
+                if(MainActivity.isConnectedWithDriverApp) {
+
+                    if (meterStatus.getText().toString().trim().equalsIgnoreCase("For Hire")) {
+                        if (MainActivity.cosAdapter != null) {
+                            Message message = new Message();
+                            message.what = Constants.MSG_MON;
+                            message.arg1 = 1;
+                            FloatingService.sendMessageToLauncherActivity(message);
+                            MainActivity.pref.edit().putString("FARE", "0.00").putString("EXTRAS", "0.00").putString("DISTANCE", "0.00").putString("TIME", "0.00").commit();
+
+                        } else
+                            Toast.makeText(ctx, "No Class of Service Table Found", Toast.LENGTH_LONG).show();
+
+                    } else if (meterStatus.getText().toString().trim().equalsIgnoreCase("Time Off")) {
+                        if (timeOffPressed) {
+
+                            // Send Time Off Message
+                            Message message = new Message();
+                            message.what = Constants.MSG_MOFF;
+                            FloatingService.sendMessageToLauncherActivity(message);
+
+                            future.cancel(true);
+                            totalDistance = 0.0; //M
+                            totalTime = 0.0; // Minutes
+                            K = 0; //Iterator
+                            accumDeltaD = 0.0;  //M
+                            acccumDeltaT = 0.0; //Minutes
+
+                            fareVal.setText(dFormat.format(0.0));
+                            distanceTimeValue.setText("0.0M | 0.00min");
+
+                            timeOffBtn.setBootstrapButtonEnabled(false);
+                            meterOnBtn.setBootstrapButtonEnabled(true);
+                            meterOnBtn.setBootstrapType("success");
+                            meterOnBtn.setText("MeterOn");
+                            meterOnBtn.setRightIcon("fa-play");
+                            meterStatus.setText("For Hire");
+//                        FloatingService.sendMessageToLauncherActivity(Constants.MSG_ENABLE_FIELDS);
+                            timeOffPressed = false;
+                            try {
+                                myOutWriter.close();
+                                fOut.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        } else
+                            Toast.makeText(ctx, "Please Stop First", Toast.LENGTH_LONG).show();
 
                     }
-
-                    meterOnBtn.setBootstrapButtonEnabled(false);
-                    timeOffBtn.setBootstrapButtonEnabled(true);
-                    meterOnBtn.setBootstrapType("primary");
-                    meterOnBtn.setText("MeterOff");
-                    meterOnBtn.setRightIcon("fa-stop");
-                    meterStatus.setText("Hired");
-                    timeOffBtn.setText("TimeOff");
-                        calculateAndShowFare();
-
-                } else if(meterStatus.getText().toString().trim().equalsIgnoreCase("Time Off")){
-                    if(timeOffPressed) {
-                        future.cancel(true);
-                        totalDistance = 0.0; //M
-                        totalTime = 0.0; // Minutes
-                        K = 0; //Iterator
-                        accumDeltaD = 0.0;  //M
-                        acccumDeltaT = 0.0; //Minutes
-
-                        fareVal.setText(dFormat.format(0.0));
-                        distanceTimeValue.setText("0.0M | 0.00min");
-
-                        timeOffBtn.setBootstrapButtonEnabled(false);
-                        meterOnBtn.setBootstrapButtonEnabled(true);
-                        meterOnBtn.setBootstrapType("success");
-                        meterOnBtn.setText("MeterOn");
-                        meterOnBtn.setRightIcon("fa-play");
-                        meterStatus.setText("For Hire");
-                        FloatingService.sendMessageToLauncherActivity(Constants.MSG_ENABLE_FIELDS);
-                        timeOffPressed = false;
-                        try {
-                            myOutWriter.close();
-                            fOut.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    else
-                        Toast.makeText(ctx, "Please Stop First", Toast.LENGTH_LONG).show();
-
                 }
+                else
+                    Toast.makeText(ctx, "Please Connect Meter to Driver App. \nThen Retry.", Toast.LENGTH_LONG).show();
+
 
                 break;
             case R.id.timeOffButton:
-                if(meterStatus.getText().toString().trim().equalsIgnoreCase("Hired")) {
-                    timeOffBtn.setText("TimeOn");
-                    meterOnBtn.setBootstrapButtonEnabled(true);
-                    meterStatus.setText("Time Off");
-                    timeOffPressed  = true;
-                } else if(meterStatus.getText().toString().trim().equalsIgnoreCase("Time Off")){
-                    timeOffBtn.setText("TimeOff");
-                    meterOnBtn.setBootstrapButtonEnabled(false);
-                    meterStatus.setText("Hired");
-//                    meterOnBtn.performClick();
-                    timeOffPressed = false;
-                }
+                if(MainActivity.isConnectedWithDriverApp) {
 
+                    if (meterStatus.getText().toString().trim().equalsIgnoreCase("Hired")) {
+                        // Send Time Off Message
+                        Message message = new Message();
+                        message.what = Constants.MSG_TOFF;
+                        FloatingService.sendMessageToLauncherActivity(message);
+                        //
+                        timeOffBtn.setText("TimeOn");
+                        meterOnBtn.setBootstrapButtonEnabled(true);
+                        meterStatus.setText("Time Off");
+                        timeOffPressed = true;
+                    } else if (meterStatus.getText().toString().trim().equalsIgnoreCase("Time Off")) {
+                        // Send Time Off Message
+                        Message message = new Message();
+                        message.what = Constants.MSG_TON;
+                        FloatingService.sendMessageToLauncherActivity(message);
+                        //
+                        timeOffBtn.setText("TimeOff");
+                        meterOnBtn.setBootstrapButtonEnabled(false);
+                        meterStatus.setText("Hired");
+//                    meterOnBtn.performClick();
+                        timeOffPressed = false;
+                    }
+                }
+                else
+                    Toast.makeText(ctx, "Please Connect Meter to Driver App. \nThen Retry.", Toast.LENGTH_LONG).show();
                 break;
             case R.id.add:
-                bookingVal.setText(String.format("%.2f", Float.parseFloat(bookingVal.getText().toString().trim()) + 0.50));
+                extrasVal.setText(String.format("%.2f", Float.parseFloat(extrasVal.getText().toString().trim()) + 0.50));
                 break;
             case R.id.sub:
-                if(Float.parseFloat(bookingVal.getText().toString().trim()) > 0)
-                bookingVal.setText(String.format("%.2f", Float.parseFloat(bookingVal.getText().toString().trim()) - 0.50));
+                if(Float.parseFloat(extrasVal.getText().toString().trim()) > 0)
+                extrasVal.setText(String.format("%.2f", Float.parseFloat(extrasVal.getText().toString().trim()) - 0.50));
                 break;
             default:
                 break;
@@ -280,15 +324,34 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
 		@Override
 		public boolean onDoubleTapEvent(MotionEvent e) { // perform Double tap on the ImageView
 
-                addimage.setVisibility(View.GONE);
-                meterStatus.setVisibility(View.GONE);
-                meterOnBtn.setVisibility(View.GONE);
-                timeOffBtn.setVisibility(View.GONE);
-                subimage.setVisibility(View.GONE);
+                if(meterStatus.isEnabled()) {
+                    meterStatus.setEnabled(false);
+                    addimage.setVisibility(View.GONE);
+                    meterStatus.setVisibility(View.GONE);
+                    meterOnBtn.setVisibility(View.GONE);
+                    timeOffBtn.setVisibility(View.GONE);
+                    subimage.setVisibility(View.GONE);
 
-            RelativeLayout.LayoutParams relativeParams = (RelativeLayout.LayoutParams)RA2.getLayoutParams();
-            relativeParams.setMargins(0, 5, 0, 0);  // left, top, right, bottom
-            RA2.setLayoutParams(relativeParams);
+
+                    RelativeLayout.LayoutParams relativeParams = (RelativeLayout.LayoutParams) RA2.getLayoutParams();
+                    relativeParams.setMargins(0, 5, 0, 0);  // left, top, right, bottom
+                    RA2.setLayoutParams(relativeParams);
+                }
+            else {
+                    meterStatus.setEnabled(true);
+                    distanceTimeValue.setVisibility(View.VISIBLE);
+                    meterStatus.setVisibility(View.VISIBLE);
+                    meterOnBtn.setVisibility(View.VISIBLE);
+                    timeOffBtn.setVisibility(View.VISIBLE);
+                    connectionStatusVal.setVisibility(View.VISIBLE);
+                    gpsVal.setVisibility(View.VISIBLE);
+                    addimage.setVisibility(View.VISIBLE);
+                    subimage.setVisibility(View.VISIBLE);
+
+                    RelativeLayout.LayoutParams relativeParams = (RelativeLayout.LayoutParams) RA2.getLayoutParams();
+                    relativeParams.setMargins(0, 15, 0, 0);  // left, top, right, bottom
+                    RA2.setLayoutParams(relativeParams);
+                }
 			return false;
 		}
 
@@ -300,19 +363,9 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
 
 		@Override
 		public void onLongPress(MotionEvent e) { // perform long press on the ImageView
-            distanceTimeValue.setEnabled(true);
-            distanceTimeValue.setVisibility(View.VISIBLE);
-            meterStatus.setVisibility(View.VISIBLE);
-            meterOnBtn.setVisibility(View.VISIBLE);
-            timeOffBtn.setVisibility(View.VISIBLE);
-            gpsImageVal.setVisibility(View.VISIBLE);
-            gpsVal.setVisibility(View.VISIBLE);
-            addimage.setVisibility(View.VISIBLE);
-            subimage.setVisibility(View.VISIBLE);
-
-            RelativeLayout.LayoutParams relativeParams = (RelativeLayout.LayoutParams)RA2.getLayoutParams();
-            relativeParams.setMargins(0, 15, 0, 0);  // left, top, right, bottom
-            RA2.setLayoutParams(relativeParams);
+            Intent i = new Intent(ctx, MainActivity.class);
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            ctx.startActivity(i);
 		}
 	}
 	/**
@@ -324,6 +377,9 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
 		}
         if(scheduler != null)
         scheduler.shutdownNow();
+
+        if(connectionStatusScheduler != null)
+            connectionStatusScheduler.shutdownNow();
     }
 
     private void readTextFile(){
@@ -546,7 +602,7 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
                             distanceTimeValue.setText(dFormat.format(totalDistance) +"M | " + dFormat.format(totalTime) + "min");
                         }
                     });
-
+                    MainActivity.pref.edit().putString("FARE", dFormat.format(meterValue)).putString("EXTRAS", extrasVal.getText().toString()).putString("DISTANCE", dFormat.format(totalDistance)).putString("TIME", dFormat.format(totalTime)).commit();
 
                     tempLat = Double.parseDouble(MainActivity.pref.getString("Lattitude","0.0"));
                     tempLong = Double.parseDouble(MainActivity.pref.getString("Longitude","0.0"));
@@ -563,5 +619,22 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
         value = value * factor;
         long tmp = Math.round(value);
         return (double) tmp / factor;
+    }
+
+    public void hired(){
+        if(K == 0) {
+//                        readTextFile();
+            openTxtFileforWriting();
+
+        }
+
+        meterOnBtn.setBootstrapButtonEnabled(false);
+        timeOffBtn.setBootstrapButtonEnabled(true);
+        meterOnBtn.setBootstrapType("primary");
+        meterOnBtn.setText("MeterOff");
+        meterOnBtn.setRightIcon("fa-stop");
+        meterStatus.setText("Hired");
+        timeOffBtn.setText("TimeOff");
+        calculateAndShowFare();
     }
 }

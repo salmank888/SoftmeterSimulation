@@ -7,7 +7,6 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.widget.Toast;
 
 public class FloatingService extends Service {
     private FloatingImage floatingImage;
@@ -26,8 +25,7 @@ public class FloatingService extends Service {
 	public void onCreate() {
 		super.onCreate();
         mServiceMessenger = new Messenger(new IncomingHandler());
-//		floatingImage = new FloatingImage(this);
-		
+
 	}
 
     @Override
@@ -40,7 +38,8 @@ public class FloatingService extends Service {
     @Override
 	public void onDestroy() {
 		super.onDestroy();
-//		floatingImage.destroy(); //  now its an efficient way to destroy the imageView
+        if(floatingImage != null)
+		floatingImage.destroy(); //  now its an efficient way to destroy the imageView
 	}
 
     private class IncomingHandler extends Handler {
@@ -49,15 +48,17 @@ public class FloatingService extends Service {
         public void handleMessage(Message msg) {
 
             switch (msg.what) {
-                case Constants.MSG_SOFTMETER_ON:
+                case Constants.MSG_SOFTMETER_POWER_ON:
                     floatingImage = new FloatingImage(getApplicationContext());
                     break;
 
-                case Constants.MSG_SOFTMETER_OFF:
+                case Constants.MSG_SOFTMETER_POWER_OFF:
                     floatingImage.destroy();
+                    floatingImage = null;
                     break;
 
-                case Constants.MSG_LOCATION_CHANGED:
+                case Constants.MSG_MON_RSP:
+                    floatingImage.hired();
                     break;
                 default:
                     break;
@@ -65,14 +66,20 @@ public class FloatingService extends Service {
         }
     }
 
-    public static void sendMessageToLauncherActivity(int msg){
+    public static void sendMessageToLauncherActivity(Message msg){
         Message lMsg = new Message();
-        switch (msg){
-            case Constants.MSG_DISABLE_FIELDS:
-                lMsg.what = msg;
+        switch (msg.what){
+            case Constants.MSG_MON:
+                lMsg = msg;
                 break;
-            case Constants.MSG_ENABLE_FIELDS:
-                lMsg.what = msg;
+            case Constants.MSG_TOFF:
+                lMsg = msg;
+                break;
+            case Constants.MSG_MOFF:
+                lMsg = msg;
+                break;
+            case Constants.MSG_TON:
+                lMsg = msg;
                 break;
             default:
                 break;
@@ -84,4 +91,6 @@ public class FloatingService extends Service {
                 e.printStackTrace();
             }
     }
+
+
 }

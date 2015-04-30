@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent" android:layout_height="wrap_content"
     xmlns:bootstrap="http://schemas.android.com/apk/res-auto"
-    android:background="@layout/editext_border">
+    android:background="@drawable/main_border">
 
 
     <RelativeLayout
@@ -25,7 +25,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="GPS"
+            android:text=""
             android:id="@+id/gpsValue"
             android:textSize="20sp"
             android:layout_alignParentRight="true"
@@ -37,26 +37,26 @@
             android:layout_height="wrap_content"
             android:id="@+id/gpsImage"
             android:layout_toLeftOf="@+id/gpsValue"
-            android:src="@drawable/gps_green"/>
+            android:src="@drawable/connected"/>
 
 
     </RelativeLayout>
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="8dp"
         android:id="@+id/RA2"
         android:layout_below="@+id/RA1"
         >
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Fare"
+        android:text="FARE"
         android:id="@+id/textView"
-        android:textSize="@dimen/label_font"
+        android:textSize="@dimen/label_font_2"
         android:textColor="#00FFFF"
         android:layout_alignBaseline="@+id/textView1"
-
+        android:textStyle="bold"
         />
     <TextView
         android:layout_width="wrap_content"
@@ -72,6 +72,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="0.00"
+            android:textStyle="bold"
             android:id="@+id/fareValue"
             android:textColor="#FF0000"
             android:textSize="@dimen/value_font"
@@ -82,10 +83,11 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Extras"
+        android:text="EXTRAS"
         android:id="@+id/textView3"
         android:textColor="#00FFFF"
-        android:textSize="@dimen/label_font"
+        android:textSize="@dimen/label_font_2"
+        android:textStyle="bold"
         android:layout_toLeftOf="@+id/textView4"
         android:layout_alignBaseline="@+id/textView4"
          />
@@ -104,6 +106,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="0.00"
+            android:textStyle="bold"
             android:id="@+id/extrasValue"
             android:textColor="@color/darkyellow"
             android:textSize="@dimen/value_font"
@@ -145,15 +148,18 @@
         android:id="@+id/LL1"
         android:orientation="horizontal"
         android:layout_below="@+id/LL3"
-        android:layout_marginTop="@dimen/neg_margin1">
+        android:layout_marginTop="@dimen/neg_margin"
+        android:background="@drawable/secondary_border">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/meterState"
-            android:textSize="@dimen/label_font"
-            android:textColor="@color/red"
-            android:text="For Hire"/>
+            android:textSize="@dimen/label_font_2"
+            android:textColor="@color/green"
+            android:text="FOR HIRE"
+            android:textStyle="bold"
+            android:textAllCaps="true"/>
 
     </LinearLayout>
     <LinearLayout
