@@ -10,6 +10,8 @@ import android.os.ResultReceiver;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -98,12 +100,14 @@ public class FetchAddressIntentService extends IntentService {
             // Catch network or other I/O problems.
             errorMessage = getString(R.string.service_not_available);
             Log.e(TAG, errorMessage, ioException);
+            Crashlytics.logException(ioException);
         } catch (IllegalArgumentException illegalArgumentException) {
             // Catch invalid latitude or longitude values.
             errorMessage = getString(R.string.invalid_lat_long_used);
             Log.e(TAG, errorMessage + ". " +
                     "Latitude = " + location.getLatitude() +
                     ", Longitude = " + location.getLongitude(), illegalArgumentException);
+            Crashlytics.logException(illegalArgumentException);
         }
 
         // Handle case where no address was found.

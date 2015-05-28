@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -46,6 +48,7 @@ public class TcpClientService extends Service {
                     s.close();
                 }  catch (Exception e) {
                     e.printStackTrace();
+                    Crashlytics.logException(e);
                 }
 
             }

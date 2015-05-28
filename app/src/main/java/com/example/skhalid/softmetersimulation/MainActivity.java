@@ -44,6 +44,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
+import com.crashlytics.android.Crashlytics;
 import com.github.espiandev.showcaseview.ShowcaseView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -108,6 +109,9 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
     public static double additionalTimeUnit = 0.25; // ATU - Fraction of Minute
     public static double additionalTimeUnitCost =  0.15; //ATC
+
+    public static String unitDistance = "km";
+    public static String unitCurrency = "$";
 
     private GoogleApiClient mGoogleApiClient;
     private Location mLastLocation;
@@ -213,6 +217,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
             versionName = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
         } catch (PackageManager.NameNotFoundException e) {
             Toast.makeText(MainActivity.this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+            Crashlytics.logException(e);
         }
 
         mMenuDialogFragment = ContextMenuDialogFragment.newInstance((int) getResources().getDimension(R.dimen.tool_bar_height), getMenuObjects());
@@ -467,9 +472,14 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.startButton:
-                sendMessage(Constants.MSG_SOFTMETER_POWER_ON);
-                stopBtn.setEnabled(true);
-                startBtn.setEnabled(false);
+                if(cosAdapter != null) {
+                    sendMessage(Constants.MSG_SOFTMETER_POWER_ON);
+                    stopBtn.setEnabled(true);
+                    startBtn.setEnabled(false);
+                } else {
+                    infoDialog = AlertDialogFragment.newInstance("Attention", "", "Please Fetch Class Of Service First", "OK", Constants.INFO);
+                    infoDialog.show(getSupportFragmentManager(), "dialog");
+                }
                 break;
 
             case R.id.stopButton:
@@ -488,6 +498,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                         s.close();
                 } catch (Exception e) {
                     Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_LONG).show();
+                    Crashlytics.logException(e);
                 }
                 runTcpClient();
                 break;
@@ -541,8 +552,10 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
         if(sv != null)
         sv.clearAnimation();
-        if(!futureTask.isCancelled())
-            futureTask.cancel(true);
+        if(futureTask!= null) {
+            if (!futureTask.isCancelled())
+                futureTask.cancel(true);
+        }
         if(scheduler != null)
             scheduler.shutdownNow();
         try {
@@ -552,6 +565,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
             s.close();
         } catch (Exception e) {
             e.printStackTrace();
+            Crashlytics.logException(e);
         }
 
         super.onDestroy();
@@ -763,6 +777,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         try {
             mServiceMessenger.send(message);
         } catch (Exception e) {
+            Crashlytics.logException(e);
 //			FragmentTabsPager fTP = new FragmentTabsPager();
 //			fTP.handleException("sendMessage: " + e.getLocalizedMessage());
         }
@@ -821,6 +836,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
                 } catch (Exception e) {
                     socketStatus = false;
+                    Crashlytics.logException(e);
                 } finally {
                     if(socketStatus) {
                         tcpReceiverThread = new TcpReceiverThread();
@@ -946,6 +962,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
             if(connectBtn != null)
             connectBtn.setVisibility(View.VISIBLE);
             e.printStackTrace();
+            Crashlytics.logException(e);
         }
     }
 
@@ -968,6 +985,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 Toast.makeText(MainActivity.this, ex.toString(), Toast.LENGTH_LONG);
                 deviceID = "000000000000000";
             }
+            Crashlytics.logException(e);
         }
         return deviceID;
     }
@@ -1009,6 +1027,11 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
                                             additionalTimeUnit = Double.parseDouble(cos.get_ATU());
                                             additionalTimeUnitCost = Double.parseDouble(cos.get_ATC());
+
+                                            unitCurrency = cos.get_SDUnitOfCurrency();
+                                            unitDistance = cos.get_SDUnitOfDistance();
+
+
 //                                                    new Handler(getMainLooper()).post(new Runnable() {
 //                                                        @Override
 //                                                        public void run() {
@@ -1029,7 +1052,8 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
                                         additionalTimeUnit = Double.parseDouble(cos.get_ATU());
                                         additionalTimeUnitCost = Double.parseDouble(cos.get_ATC());
-
+                                        unitCurrency = cos.get_SDUnitOfCurrency();
+                                        unitDistance = cos.get_SDUnitOfDistance();
 
                                         break;
                                     }
@@ -1049,6 +1073,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+                Crashlytics.logException(e);
             }
             Log.i("TcpClient", "received: " + inMsg);
         }
@@ -1176,6 +1201,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         }
         catch(Exception e){
             e.printStackTrace();
+            Crashlytics.logException(e);
         }
 
 

@@ -55,14 +55,14 @@
         android:id="@+id/textView"
         android:textSize="@dimen/label_font_2"
         android:textColor="#00FFFF"
-        android:layout_alignBaseline="@+id/textView1"
+        android:layout_alignBaseline="@+id/currencyValue"
         android:textStyle="bold"
         />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text=" $"
-        android:id="@+id/textView1"
+        android:id="@+id/currencyValue"
         android:textColor="#FF0000"
         android:textSize="@dimen/label_font"
         android:layout_toRightOf="@+id/textView"
@@ -76,8 +76,8 @@
             android:id="@+id/fareValue"
             android:textColor="#FF0000"
             android:textSize="@dimen/value_font"
-            android:layout_toRightOf="@+id/textView1"
-            android:layout_alignBaseline="@+id/textView1"
+            android:layout_toRightOf="@+id/currencyValue"
+            android:layout_alignBaseline="@+id/currencyValue"
             />
 
     <TextView
@@ -88,15 +88,15 @@
         android:textColor="#00FFFF"
         android:textSize="@dimen/label_font_2"
         android:textStyle="bold"
-        android:layout_toLeftOf="@+id/textView4"
-        android:layout_alignBaseline="@+id/textView4"
+        android:layout_toLeftOf="@+id/currencyValue1"
+        android:layout_alignBaseline="@+id/currencyValue1"
          />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text=" $"
-        android:id="@+id/textView4"
+        android:id="@+id/currencyValue1"
         android:textColor="#FF0000"
         android:textSize="@dimen/label_font"
         android:layout_toLeftOf="@+id/extrasValue"
@@ -112,7 +112,7 @@
             android:textSize="@dimen/value_font"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
-            android:layout_alignBaseline="@+id/textView4"
+            android:layout_alignBaseline="@+id/currencyValue1"
              />
 
 

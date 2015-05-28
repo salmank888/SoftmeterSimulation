@@ -17,10 +17,13 @@ public class COS {
     private String _APC;
     private String _CPC;
     private String _DefaultClassOfService;
+    private String _SDUnitOfDistance;
+    private String _SDUnitOfCurrency;
+
 
     public COS(String body){
         String [] bodyArray = body.split("\\" + Constants.COLSEPARATOR);
-        if(bodyArray.length == 11) {
+        if(bodyArray.length == 13) {
             _ClassOfServiceID = bodyArray[0];
             _APF = bodyArray[1];
             _PUM = bodyArray[2];
@@ -29,9 +32,12 @@ public class COS {
             _ADC = bodyArray[5];
             _ATU = bodyArray[6];
             _ATC = bodyArray[7];
+
             _APC = bodyArray[8];
             _CPC = bodyArray[9];
             _DefaultClassOfService = bodyArray[10];
+            _SDUnitOfDistance = bodyArray[11];
+            _SDUnitOfCurrency = bodyArray[12];
         }
 
     }
@@ -122,5 +128,21 @@ public class COS {
 
     public void set_DefaultClassOfService(String _DefaultClassOfService) {
         this._DefaultClassOfService = _DefaultClassOfService;
+    }
+
+    public String get_SDUnitOfDistance() {
+        return _SDUnitOfDistance;
+    }
+
+    public void set_SDUnitOfDistance(String _SDUnitOfDistance) {
+        this._SDUnitOfDistance = _SDUnitOfDistance;
+    }
+
+    public String get_SDUnitOfCurrency() {
+        return _SDUnitOfCurrency;
+    }
+
+    public void set_SDUnitOfCurrency(String _SDUnitOfCurrency) {
+        this._SDUnitOfCurrency = _SDUnitOfCurrency;
     }
 }
