@@ -110,6 +110,9 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     public static double additionalTimeUnit = 0.25; // ATU - Fraction of Minute
     public static double additionalTimeUnitCost =  0.15; //ATC
 
+    public static String unitDistance = "km";
+    public static String unitCurrency = "$";
+
     private GoogleApiClient mGoogleApiClient;
     private Location mLastLocation;
     private LocationRequest mLocationRequest;
@@ -469,9 +472,14 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.startButton:
-                sendMessage(Constants.MSG_SOFTMETER_POWER_ON);
-                stopBtn.setEnabled(true);
-                startBtn.setEnabled(false);
+                if(cosAdapter != null) {
+                    sendMessage(Constants.MSG_SOFTMETER_POWER_ON);
+                    stopBtn.setEnabled(true);
+                    startBtn.setEnabled(false);
+                } else {
+                    infoDialog = AlertDialogFragment.newInstance("Attention", "", "Please Fetch Class Of Service First", "OK", Constants.INFO);
+                    infoDialog.show(getSupportFragmentManager(), "dialog");
+                }
                 break;
 
             case R.id.stopButton:
@@ -544,8 +552,10 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
         if(sv != null)
         sv.clearAnimation();
-        if(!futureTask.isCancelled())
-            futureTask.cancel(true);
+        if(futureTask!= null) {
+            if (!futureTask.isCancelled())
+                futureTask.cancel(true);
+        }
         if(scheduler != null)
             scheduler.shutdownNow();
         try {
@@ -1017,6 +1027,11 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
                                             additionalTimeUnit = Double.parseDouble(cos.get_ATU());
                                             additionalTimeUnitCost = Double.parseDouble(cos.get_ATC());
+
+                                            unitCurrency = cos.get_SDUnitOfCurrency();
+                                            unitDistance = cos.get_SDUnitOfDistance();
+
+
 //                                                    new Handler(getMainLooper()).post(new Runnable() {
 //                                                        @Override
 //                                                        public void run() {
@@ -1037,7 +1052,8 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
                                         additionalTimeUnit = Double.parseDouble(cos.get_ATU());
                                         additionalTimeUnitCost = Double.parseDouble(cos.get_ATC());
-
+                                        unitCurrency = cos.get_SDUnitOfCurrency();
+                                        unitDistance = cos.get_SDUnitOfDistance();
 
                                         break;
                                     }

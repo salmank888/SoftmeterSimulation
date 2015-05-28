@@ -63,6 +63,8 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
     private ImageView subimage;
     private RelativeLayout RA2;
     protected ArrayList<LatiLongi> coordinatesList;
+    public static TextView currencyValue;
+    public static TextView currencyValue1;
 
     double deltaTime = 1.0/6.0; //Seconds
     double deltaDistance;
@@ -102,8 +104,12 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
          connectionStatusVal = (ImageView) findViewById(R.id.gpsImage);
 		 fareVal = (TextView) findViewById(R.id.fareValue);
 		 extrasVal = (TextView) findViewById(R.id.extrasValue);
+        currencyValue = (TextView) findViewById(R.id.currencyValue);
+        currencyValue1 = (TextView) findViewById(R.id.currencyValue1);
 	     fareVal.setTypeface(tf);
 	     extrasVal.setTypeface(tf);
+
+
 
         meterOnBtn = (BootstrapButton) findViewById(R.id.hiredButton);
         timeOffBtn = (BootstrapButton) findViewById(R.id.timeOffButton);
@@ -308,8 +314,9 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
                 extrasVal.setText(String.format("%.2f", Float.parseFloat(extrasVal.getText().toString().trim()) + 0.50));
                 break;
             case R.id.sub:
-                if(Float.parseFloat(extrasVal.getText().toString().trim()) > 0)
                 extrasVal.setText(String.format("%.2f", Float.parseFloat(extrasVal.getText().toString().trim()) - 0.50));
+                if((Float.parseFloat(extrasVal.getText().toString().trim()) + Float.parseFloat(fareVal.getText().toString().trim())) < 0)
+                    extrasVal.setText(String.format("%.2f", Float.parseFloat(extrasVal.getText().toString().trim()) + 0.50));
                 break;
             default:
                 break;
@@ -549,7 +556,11 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
                         meterValue = MainActivity.ambPickupFee;
                     } else {
                         strToPrint = " ";
-                        deltaDistance = DistanceCalculator.CalculateDistance(tempLat, tempLong, Double.parseDouble(MainActivity.pref.getString("Lattitude","0.0")), Double.parseDouble(MainActivity.pref.getString("Longitude","0.0")))/1609.34;
+                        if(MainActivity.unitDistance.equalsIgnoreCase("miles")) {
+                            deltaDistance = DistanceCalculator.CalculateDistance(tempLat, tempLong, Double.parseDouble(MainActivity.pref.getString("Lattitude", "0.0")), Double.parseDouble(MainActivity.pref.getString("Longitude", "0.0"))) / 1609.34;
+                        } else {
+                            deltaDistance = DistanceCalculator.CalculateDistance(tempLat, tempLong, Double.parseDouble(MainActivity.pref.getString("Lattitude", "0.0")), Double.parseDouble(MainActivity.pref.getString("Longitude", "0.0"))) / 1000.00;
+                        }
                         totalDistance = totalDistance + deltaDistance;
                         totalTime = totalTime + deltaTime;
                         if(totalTime > MainActivity.puTime || totalDistance > MainActivity.puMiles){
@@ -604,7 +615,13 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
                         @Override
                         public void run() {
                             fareVal.setText(dFormat.format(meterValue));
-                            distanceTimeValue.setText(dFormat.format(totalDistance) +"M | " + dFormat.format(totalTime) + "min");
+                            currencyValue.setText(" "+MainActivity.unitCurrency);
+                            currencyValue1.setText(" "+MainActivity.unitCurrency);
+                            if(MainActivity.unitDistance.equalsIgnoreCase("miles")) {
+                                distanceTimeValue.setText(dFormat.format(totalDistance) + "Mi | " + dFormat.format(totalTime) + "min");
+                            } else {
+                                distanceTimeValue.setText(dFormat.format(totalDistance) + "km | " + dFormat.format(totalTime) + "min");
+                            }
                         }
                     });
                     MainActivity.pref.edit().putString("FARE", dFormat.format(meterValue)).putString("EXTRAS", extrasVal.getText().toString()).putString("DISTANCE", dFormat.format(totalDistance)).putString("TIME", dFormat.format(totalTime)).commit();
