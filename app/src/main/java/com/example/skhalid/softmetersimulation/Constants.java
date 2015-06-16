@@ -27,6 +27,12 @@ public final class Constants {
 
     public static final int MSG_MON_RSP = 10;
 
+    public static final int MSG_TOFF_RSP = 11;
+
+    public static final int MSG_MOFF_RSP = 12;
+
+    public static final int MSG_TON_RSP = 13;
+
 //    public static final int MSG_MON_RSP = 11;
 
     public static final int MSG_RCF = 11111;  // RCF - Request Configuration File

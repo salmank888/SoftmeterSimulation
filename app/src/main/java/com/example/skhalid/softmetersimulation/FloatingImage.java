@@ -46,6 +46,7 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
 	GestureDetector gestureDetector; // to detect some listener on the image.
 	WindowManager.LayoutParams params; // layoutParams where i set the image height/width and other.
 	WindowManager.LayoutParams paramsF;
+    View softmeterGUI;
 	int initialX;
 	int initialY;
 	float initialTouchX;
@@ -53,7 +54,7 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
 	private LayoutInflater mInflater;
     private TextView distanceTimeValue;
     private TextView gpsVal;
-    private ImageView connectionStatusVal;
+    private ImageView connectionStatusVal, floatBtn;
     private TextView fareVal;
     private TextView extrasVal;
     private TextView meterStatus;
@@ -61,7 +62,7 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
     private BootstrapButton timeOffBtn;
     private ImageView addimage;
     private ImageView subimage;
-    private RelativeLayout RA2;
+    private RelativeLayout RA2, softmeterUI;
     protected ArrayList<LatiLongi> coordinatesList;
     public static TextView currencyValue;
     public static TextView currencyValue1;
@@ -99,13 +100,23 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
 		 LayoutInflater.from(context).inflate(R.layout.softmeternew, this, true);
 		 
 		 Typeface tf = Typeface.createFromAsset(context.getAssets(), "digital-7.ttf");
+
+         softmeterUI = (RelativeLayout) findViewById(R.id.floatSoftmeter);
+        softmeterUI.setVisibility(GONE);
+         floatBtn = (ImageView) findViewById(R.id.floatImage);
+        floatBtn.setVisibility(VISIBLE);
+
          distanceTimeValue = (TextView) findViewById(R.id.distTimeValue);
          gpsVal = (TextView) findViewById(R.id.gpsValue);
          connectionStatusVal = (ImageView) findViewById(R.id.gpsImage);
 		 fareVal = (TextView) findViewById(R.id.fareValue);
 		 extrasVal = (TextView) findViewById(R.id.extrasValue);
-        currencyValue = (TextView) findViewById(R.id.currencyValue);
-        currencyValue1 = (TextView) findViewById(R.id.currencyValue1);
+         currencyValue = (TextView) findViewById(R.id.currencyValue);
+         currencyValue1 = (TextView) findViewById(R.id.currencyValue1);
+
+         currencyValue.setText(" "+MainActivity.unitCurrency);
+         currencyValue1.setText(" "+MainActivity.unitCurrency);
+
 	     fareVal.setTypeface(tf);
 	     extrasVal.setTypeface(tf);
 
@@ -130,7 +141,7 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
         subimage.setOnClickListener(this);
 
 
-        gestureDetector = new GestureDetector(ctx, new GestureListener());
+        gestureDetector = new GestureDetector(ctx, new GestureListener(this));
 		windowManager = (WindowManager) ctx.getSystemService("window"); // ini the windowManager
 		params = new WindowManager.LayoutParams(
 				WindowManager.LayoutParams.WRAP_CONTENT,
@@ -144,7 +155,7 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
 		params.x = 0; // horizontal location of imageView
 		params.y = 100; // vertical location of imageView
 		params.height = LayoutParams.WRAP_CONTENT; // given it a fixed height in case of large image
-		params.width = LayoutParams.MATCH_PARENT; // given it a fixed width in case of large image
+		params.width = LayoutParams.WRAP_CONTENT; // given it a fixed width in case of large image
 		params.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN;
 		windowManager.addView(this, params); // adding the imageView & the  params to the WindowsManger.
 
@@ -253,6 +264,8 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
                             accumDeltaD = 0.0;  //M
                             acccumDeltaT = 0.0; //Minutes
 
+                            extrasVal.setText(dFormat.format(0.0));
+
                             fareVal.setText(dFormat.format(0.0));
                             distanceTimeValue.setText("0.0M | 0.00min");
 
@@ -325,6 +338,10 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
 
     private class GestureListener extends
 			GestureDetector.SimpleOnGestureListener {
+
+        public GestureListener(View view){
+            softmeterGUI = view;
+        }
 		@Override
 		public boolean onDown(MotionEvent e) {// When there is a touch event on the imageView
 			return true;
@@ -366,7 +383,19 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
 
 		@Override
 		public boolean onSingleTapConfirmed(MotionEvent e) { // perform single tap on the ImageView
-			Toast.makeText(ctx, "Hi You Single Tap Me", Toast.LENGTH_SHORT).show();
+			if(floatBtn.getVisibility() == VISIBLE) {
+                floatBtn.setVisibility(GONE);
+                softmeterUI.setVisibility(VISIBLE);
+                params.width = LayoutParams.MATCH_PARENT; // given it a fixed width in case of large image
+                windowManager.updateViewLayout(softmeterGUI, params); // adding the imageView & the  params to the WindowsManger.
+            }
+            else{
+                softmeterUI.setVisibility(GONE);
+                floatBtn.setVisibility(VISIBLE);
+                params.width = LayoutParams.WRAP_CONTENT; // given it a fixed width in case of large image
+                windowManager.updateViewLayout(softmeterGUI, params); // adding the imageView & the  params to the WindowsManger.
+            }
+
 			return true;
 		}
 
@@ -556,7 +585,7 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
                         meterValue = MainActivity.ambPickupFee;
                     } else {
                         strToPrint = " ";
-                        if(MainActivity.unitDistance.equalsIgnoreCase("miles")) {
+                        if(MainActivity.unitDistance.equalsIgnoreCase("miles") || MainActivity.unitDistance.equalsIgnoreCase("mile")) {
                             deltaDistance = DistanceCalculator.CalculateDistance(tempLat, tempLong, Double.parseDouble(MainActivity.pref.getString("Lattitude", "0.0")), Double.parseDouble(MainActivity.pref.getString("Longitude", "0.0"))) / 1609.34;
                         } else {
                             deltaDistance = DistanceCalculator.CalculateDistance(tempLat, tempLong, Double.parseDouble(MainActivity.pref.getString("Lattitude", "0.0")), Double.parseDouble(MainActivity.pref.getString("Longitude", "0.0"))) / 1000.00;
@@ -599,7 +628,7 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
                                 meterValue = meterValue + Math.max(distanceCost, timeCost);
 
                                 try {
-                                    myOutWriter.append(dFormat.format(totalDistance)+ "M\t" + dFormat.format(totalTime)+ "min\t" + strToPrint + "\t" + dFormat.format(meterValue) + "\n" );
+                                    myOutWriter.append(dFormat.format(totalDistance)+ MainActivity.unitDistance +"\t" + dFormat.format(totalTime)+ "min\t" + strToPrint + "\t" + dFormat.format(meterValue) + "\n" );
                                 } catch (IOException e) {
                                     // TODO Auto-generated catch block
                                     e.printStackTrace();
@@ -617,10 +646,10 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
                             fareVal.setText(dFormat.format(meterValue));
                             currencyValue.setText(" "+MainActivity.unitCurrency);
                             currencyValue1.setText(" "+MainActivity.unitCurrency);
-                            if(MainActivity.unitDistance.equalsIgnoreCase("miles")) {
+                            if(MainActivity.unitDistance.equalsIgnoreCase("miles") || MainActivity.unitDistance.equalsIgnoreCase("mile")) {
                                 distanceTimeValue.setText(dFormat.format(totalDistance) + "Mi | " + dFormat.format(totalTime) + "min");
                             } else {
-                                distanceTimeValue.setText(dFormat.format(totalDistance) + "km | " + dFormat.format(totalTime) + "min");
+                                distanceTimeValue.setText(dFormat.format(totalDistance) + "Km | " + dFormat.format(totalTime) + "min");
                             }
                         }
                     });
@@ -659,4 +688,15 @@ public class FloatingImage extends RelativeLayout implements OnTouchListener, Vi
         timeOffBtn.setText("TimeOff");
         calculateAndShowFare();
     }
+
+    public void timeOff(){
+        timeOffBtn.performClick();
+    }
+    public void timeOn(){
+        timeOffBtn.performClick();
+    }
+    public void meterOff(){
+        meterOnBtn.performClick();
+    }
+
 }

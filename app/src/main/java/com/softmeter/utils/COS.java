@@ -1,6 +1,7 @@
 package com.softmeter.utils;
 
 import com.example.skhalid.softmetersimulation.Constants;
+import com.example.skhalid.softmetersimulation.MainActivity;
 
 /**
  * Created by sKhalid on 4/6/2015.
@@ -38,6 +39,9 @@ public class COS {
             _DefaultClassOfService = bodyArray[10];
             _SDUnitOfDistance = bodyArray[11];
             _SDUnitOfCurrency = bodyArray[12];
+
+            MainActivity.unitCurrency = _SDUnitOfCurrency;
+            MainActivity.unitDistance = _SDUnitOfDistance;
         }
 
     }

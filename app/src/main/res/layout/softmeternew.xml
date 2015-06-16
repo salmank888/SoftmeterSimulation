@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent" android:layout_height="wrap_content"
+    android:layout_width="wrap_content" android:layout_height="wrap_content"
     xmlns:bootstrap="http://schemas.android.com/apk/res-auto"
-    android:background="@drawable/main_border">
+    >
 
 
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/main_border"
+        android:id="@+id/floatSoftmeter"
+        android:animateLayoutChanges="true"
+
+        >
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -201,4 +209,16 @@
 
 
     </LinearLayout>
+
+    </RelativeLayout>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/floatImage"
+        android:src="@drawable/ic_launcher"
+        android:visibility="gone"
+        android:background="@drawable/circural_border"
+        />
+
 </RelativeLayout>

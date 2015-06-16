@@ -62,6 +62,18 @@ public class FloatingService extends Service {
                 case Constants.MSG_MON_RSP:
                     floatingImage.hired();
                     break;
+
+                case Constants.MSG_TOFF_RSP:
+                    floatingImage.timeOff();
+                    break;
+
+                case Constants.MSG_TON_RSP:
+                    floatingImage.timeOn();
+                    break;
+
+                case Constants.MSG_MOFF_RSP:
+                    floatingImage.meterOff();
+                    break;
                 default:
                     break;
             }

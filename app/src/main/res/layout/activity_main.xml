@@ -1,16 +1,6 @@
-<android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/swipeContainer"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/soft_blue"
-        android:id="@+id/scrollView"
-        >
-
 <RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingLeft="@dimen/activity_horizontal_margin"
@@ -18,236 +8,17 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:keepScreenOn="true"
-    >
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="@dimen/et_height"
-    android:minHeight="@dimen/et_height"
-    android:id="@+id/LL20"
-    android:layout_marginTop="50dp"
-    android:gravity="center_horizontal"
+    android:background="@color/soft_blue"
     >
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:textSize="@dimen/primary_font"
-        android:text="APF($): "
-        android:id="@+id/apfLbl"
-        android:textColor="@color/soft_orange"
-        android:visibility="gone"
-        />
-
-    <EditText
-        android:id="@+id/apfVal"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:inputType="numberDecimal"
-        android:ems="10"
-        android:textSize="@dimen/primary_font"
-        android:visibility="gone"
-        />
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:text="Pull Down to Get Rates"
-        android:id="@+id/Instruction"
-        android:textColor="@color/soft_orange"
-        />
-
-</LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/et_height"
-        android:minHeight="@dimen/et_height"
-        android:id="@+id/LL21"
-        android:layout_below="@+id/LL20"
-        android:layout_marginTop="5dp"
-        android:visibility="gone"
-        >
-
-    <TextView
-        android:layout_width="0px"
-        android:layout_height="match_parent"
-        android:textSize="@dimen/primary_font"
-        android:text="PUM(M): "
-        android:id="@+id/pumLbl"
-        android:layout_below="@+id/apfLbl"
-        android:layout_weight="3"
-        android:textColor="@color/soft_orange"
-        android:visibility="gone"
-        />
-
-    <EditText
-        android:layout_width="0px"
-        android:layout_height="match_parent"
-        android:inputType="numberDecimal"
-        android:ems="10"
-        android:textSize="@dimen/primary_font"
-        android:id="@+id/pumVal"
-        android:layout_weight="7"
-        android:visibility="gone"
-
-         />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/et_height"
-        android:id="@+id/LL22"
-        android:layout_below="@+id/LL21"
-        android:layout_marginTop="5dp"
-        android:visibility="gone"
-        >
-    <TextView
-        android:layout_width="0px"
-        android:layout_height="match_parent"
-        android:textSize="@dimen/primary_font"
-        android:text="PUT(min): "
-        android:id="@+id/putLbl"
-        android:layout_weight="3"
-        android:textColor="@color/soft_orange"
-        android:visibility="gone"
-        />
-
-    <EditText
-        android:layout_width="0px"
-        android:layout_height="match_parent"
-        android:inputType="numberDecimal"
-        android:ems="10"
-        android:textSize="@dimen/primary_font"
-        android:id="@+id/putVal"
-        android:layout_weight="7"
-        android:visibility="gone"
-         />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/et_height"
-        android:id="@+id/LL23"
-        android:layout_below="@+id/LL22"
-        android:layout_marginTop="5dp">
-    <TextView
-        android:layout_width="0px"
-        android:layout_height="match_parent"
-        android:textSize="@dimen/primary_font"
-        android:text="ADU(M): "
-        android:id="@+id/aduLbl"
-        android:layout_weight="3"
-        android:textColor="@color/soft_orange"
-        android:visibility="gone"
-     />
-
-    <EditText
-        android:layout_width="0px"
-        android:layout_height="match_parent"
-        android:inputType="numberDecimal"
-        android:ems="10"
-        android:textSize="@dimen/primary_font"
-        android:id="@+id/aduVal"
-        android:layout_weight="7"
-        android:visibility="gone"
-        />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/et_height"
-        android:id="@+id/LL24"
-        android:layout_below="@+id/LL23"
-        android:layout_marginTop="5dp">
-    <TextView
-        android:layout_width="0px"
-        android:layout_height="match_parent"
-        android:textSize="@dimen/primary_font"
-        android:text="ADC($): "
-        android:id="@+id/adcLbl"
-        android:layout_weight="3"
-        android:textColor="@color/soft_orange"
-        android:visibility="gone"
-         />
-
-    <EditText
-        android:layout_width="0px"
-        android:layout_height="match_parent"
-        android:inputType="numberDecimal"
-        android:ems="10"
-        android:id="@+id/adcVal"
-        android:layout_weight="7"
-        android:textSize="@dimen/primary_font"
-        android:visibility="gone"
-        />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/et_height"
-        android:id="@+id/LL25"
-        android:layout_below="@+id/LL24"
-        android:layout_marginTop="5dp">
-    <TextView
-        android:layout_width="0px"
-        android:layout_height="match_parent"
-        android:textSize="@dimen/primary_font"
-        android:text="ATU(min): "
-        android:id="@+id/atuLbl"
-        android:layout_weight="3"
-        android:textColor="@color/soft_orange"
-        android:visibility="gone"
-        />
-
-    <EditText
-        android:layout_width="0px"
-        android:layout_height="match_parent"
-        android:inputType="numberDecimal"
-        android:ems="10"
-        android:id="@+id/atuVal"
-        android:layout_weight="7"
-        android:textSize="@dimen/primary_font"
-        android:visibility="gone"
-        />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/et_height"
-        android:id="@+id/LL26"
-        android:layout_below="@+id/LL25"
-        android:layout_marginTop="5dp">
-    <TextView
-        android:layout_width="0px"
-        android:layout_height="match_parent"
-        android:textSize="@dimen/primary_font"
-        android:text="ATC($): "
-        android:id="@+id/atcLbl"
-        android:layout_weight="3"
-        android:textColor="@color/soft_orange"
-        android:visibility="gone"
-         />
-
-    <EditText
-        android:layout_width="0px"
-        android:layout_height="match_parent"
-        android:inputType="numberDecimal"
-        android:ems="10"
-        android:id="@+id/atcVal"
-        android:layout_weight="7"
-        android:textSize="@dimen/primary_font"
-        android:visibility="gone"
-        />
-    </LinearLayout>
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="fill_parent"
         android:minWidth="@dimen/btn_width"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/LL26"
         android:id="@+id/linearLayout3"
         android:layout_marginBottom="10dp"
+        android:layout_centerVertical="true"
         >
 
 
@@ -259,6 +30,8 @@
             android:layout_gravity="center_horizontal"
             android:background="@drawable/button_green"
             android:textColor="@drawable/buttoncolor"
+            android:paddingTop="30dp"
+            android:paddingBottom="30dp"
              />
 
 
@@ -271,6 +44,8 @@
             android:layout_gravity="center_horizontal"
             android:background="@drawable/button_green"
             android:textColor="@drawable/buttoncolor"
+            android:paddingTop="30dp"
+            android:paddingBottom="30dp"
             />
 
         <Button
@@ -283,6 +58,8 @@
             android:background="@drawable/button_green"
             android:textColor="@drawable/buttoncolor"
             android:visibility="invisible"
+            android:paddingTop="30dp"
+            android:paddingBottom="30dp"
             />
 
     </LinearLayout>
@@ -314,5 +91,3 @@
         android:layout_centerHorizontal="true"
          />
 </RelativeLayout>
-    </ScrollView>
-</android.support.v4.widget.SwipeRefreshLayout>

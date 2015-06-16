@@ -23,8 +23,8 @@ android {
         applicationId "com.example.skhalid.softmetersimulation"
         minSdkVersion 15
         targetSdkVersion 21
-        versionCode 7
-        versionName "1.7"
+        versionCode 10
+        versionName "1.10"
 }
     buildTypes {
         release {
@@ -53,5 +53,4 @@ dependencies {
     }
     compile 'com.android.support:support-v4:21.0.3'
     compile 'com.lsjwzh:materialloadingprogressbar:0.5.3-RELEASE'
-    compile project(':library')
 }
